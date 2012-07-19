@@ -24,7 +24,7 @@ abstract class SentryBuilder(selfType: Class[_], val resourceName: String, sentr
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
   def withConcurrencyLimit(concurrencyLimit: Int): NamedSentry with SentryBuilder =
-    withSentry(new ConcurrencyLimitSentry(resourceName, concurrencyLimit))
+    withSentry(new ConcurrencyLimitSentry(resourceName, concurrencyLimit, selfType))
 
   /**
    * Append a rate limit sentry to the current sentry.
@@ -34,7 +34,7 @@ abstract class SentryBuilder(selfType: Class[_], val resourceName: String, sentr
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
   def withRateLimit(rate: Int, per: Long): NamedSentry with SentryBuilder =
-    withSentry(new RateLimitSentry(resourceName, rate, per))
+    withSentry(new RateLimitSentry(resourceName, rate, per, selfType))
 
   /**
    * Append a invocation duration limit sentry to the current sentry.
