@@ -1,0 +1,226 @@
+/*
+ * Copyright (c) 2012 Erik van Oosten
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package examples
+
+import scala.util.control.Exception._
+import java.util.concurrent.{Future, ExecutionException, Callable, Executors}
+import scala.collection.JavaConverters._
+import nl.grons.sentries.{Sentries, SentrySupport}
+import nl.grons.sentries.support._
+import scala.util.Random
+
+/**
+ * Some runnable examples to show how to use sentries.
+ */
+object SentryExampleApp extends App {
+
+  new JmxReporter(Sentries.defaultRegistry).start()
+
+  val random = new Random()
+
+  /**
+   * This is the resource we're going to call in the examples.
+   */
+  class SimpleExampleService(val name: String) {
+    /**
+     * Throws a {@link NullPointerException} when parameter is null.
+     */
+    def doIt(param: String): Int = {
+      param.length % 2
+    }
+  }
+
+  /**
+   * Simple example.
+   */
+  class Example1 extends SentrySupport {
+    /**
+     * Define a sentry with a fail limit (aka circuit breaker), combined with a concurrency limit.
+     *
+     * The sentry will 'break' when 2 consecutive invocations failed.
+     * When in broken state, after each 50 ms, 1 attempt will be made to go back to the normal ('flow') state.
+     */
+    private[this] val simpleServiceSentry = sentry("simpleExampleService").
+      withFailLimit(failLimit = 2, retryDelayMillis = 50)
+
+    /**
+     * The next circuit breaker works independently from serviceCb.
+     * Always use an independent sentry for a resource that fails independently.
+     *
+     * This sentry also denies invocations when there are already 10 in progress.
+     */
+    private[this] val anotherServiceSentry = sentry("anotherService").
+      withFailLimit(failLimit = 4, retryDelayMillis = 1000).
+      withConcurrencyLimit(10)
+
+    /**
+     * The service we are going to call.
+     */
+    private[this] val service: SimpleExampleService = new SimpleExampleService("ses")
+
+    /**
+     * Here we use the sentry by passing it a code block.
+     */
+    def callService(param: String): Int = simpleServiceSentry {
+      service.doIt(param)
+    }
+  }
+
+  // Lets try it out!
+  val example1 = new Example1
+  // First failure. The exception is simply rethrown. The sentry's failure counter increases to 1:
+  assertThrows[NullPointerException] { example1.callService(null) }
+  // Next attempt succeeds, failure counter back to 0:
+  assert( example1.callService("abc") == 1 )
+  // Again a failure. The exception is rethrown and the failure counter increases to 1:
+  assertThrows[NullPointerException] { example1.callService(null) }
+  // Second failure in a row. The exception is still rethrown:
+  assertThrows[NullPointerException] { example1.callService(null) }
+  // however, the failure counter is now at 2 and the sentry goes to the 'broken' state.
+
+  // Next attempt to use the service; a NotAvailableException is thrown immediately.
+  // Note that SimpleExampleService is not called even though it would work this time.
+  assertThrows[NotAvailableException] { example1.callService("abc") }
+
+  // The circuit breaker will retry after 50 ms. Lets wait for it.
+  Thread.sleep(55L)
+  // Yes, the sentry is flowing again!
+  assert( example1.callService("abcd") == 0 )
+
+  /**
+   * Load balancer example.
+   *
+   * In this example we'll show the load balancer support. The default load balancer requires you to implement
+   * 'resources' that returns all available resources. When this is not dynamic, simply implement 'resources'
+   * as a val (as done in this example).
+   *
+   * Upon invoking the load balancer it randomly picks one of the given resources and tries to use it. When a
+   * NotAvailable exception is caught, the next resource is attempted.
+   *
+   * If the resource throws any other error, the error is simply rethrown and not further attempt to invoke
+   * another resource is done.
+   */
+  class Example2 extends SentrySupport {
+    /**
+     * LoadBalancer is abstract and requires us to implement 'resources'.
+     */
+    val loadBalancer = new LoadBalancer[SimpleExampleService]("load balancer") {
+      /**
+       * 'resources' given the current set of resource and their sentries for each invocation of the load balancer.
+       * So if you're doing fancy stuff like remote look-ups (for example in Zookeeper) you might want to consider
+       * caching the result or mixin the {@link Caching} trait.
+       *
+       * Another solution is to implement 'resources' as a val, as we do here.
+       *
+       * In this example we have 3 resources available. Each resource will be put in a pair with a sentry for
+       * that resource.
+       */
+      val resources = IndexedSeq(
+        new SimpleExampleService("s1"),
+        new SimpleExampleService("s2"),
+        new SimpleExampleService("s3")
+      ).map(addSentry(_))
+
+      /**
+       * Puts the resource (in this case a SimpleExampleService) in a pair with its sentry.
+       */
+      def addSentry(ps: SimpleExampleService): (SimpleExampleService, NamedSentry) =
+        (ps, sentry(ps.name).withConcurrencyLimit(2).withFailLimit(10, 500L))
+    }
+
+    /**
+     * Here we use the load balancer.
+     *
+     * Note that the code block will be executed in the context of the resource's sentry. Note that the code might
+     * be invoked multiple times when a NotAvailableException is caught in the load balancer.
+     *
+     * You can also use this fact to your advantage; if inside the code block it becomes clear that another
+     * resource should be called, explicitly throw a NotAvailableException and the load balancer will invoke
+     * the next resource.
+     */
+    def callService(param: String): Int = loadBalancer { ps: SimpleExampleService =>
+      Thread.sleep(50 + random.nextInt(100)) // simulating a slow computation....
+      ps.doIt(param)
+    }
+  }
+
+  // Great! Now lets try to use it:
+  val example2 = new Example2
+  // The task we are going to call concurrently:
+  val task = new Callable[Int] {
+    def call() = {
+      Thread.sleep(10 + random.nextInt(10))
+      example2.callService("abcd")
+    }
+  }
+  val tasks = Vector.fill(500)(task).asJava
+
+  // There are 3 resource, each protected with a sentry that allows 2 simultaneous invocations, we can therefore
+  // (in theory) safely do 6 invocations concurrently.
+  // In practice, when threads behave according to the herd-effect multiple threads can race for the same resource.
+  // As each resource is only tried once, any thread might miss a resource that became available just after its
+  // use was attempted. To see how this works, just replace the duration in {@link Example2.callService(String)}
+  // with a fixed delay.
+  {
+    val executor = Executors.newFixedThreadPool(6)
+    try {
+      val futures = executor.invokeAll(tasks)
+      val options = futuresToOptions(futures)
+
+      // Assert that there are no None's
+      val misses = options.filter(_.isEmpty).size
+      assert(misses == 0, "Expected no misses, there were " + misses)
+
+    } finally {
+      executor.shutdown()
+    }
+  }
+
+  // Now lets try to break it by calling it from many more threads.
+  while (true) {
+    val executor = Executors.newFixedThreadPool(50)
+    try {
+      val futures = executor.invokeAll(tasks)
+      val options = futuresToOptions(futures)
+
+      // Assert that there are some None's
+      val misses = options.filter(_.isEmpty).size
+      assert(misses > 0, "Expected some misses, there were 0")
+
+    } finally {
+      executor.shutdown()
+    }
+  }
+
+  /**
+   * Little helper method to assert that the given code throws an exception of given type.
+   */
+  def assertThrows[E <: Throwable](c: => Unit) {
+    val e = allCatch.either(c)
+    assert(e.isLeft && e.left.get.isInstanceOf[E])
+  }
+
+  // Convert normal Future results to a Some, and NotAvailableExceptions to a None:
+  def futuresToOptions[A](futures: java.util.List[Future[A]]): Seq[Option[A]] = futures.asScala.map { future =>
+    try Some(future.get())
+    catch {
+      case e: ExecutionException if e.getCause.isInstanceOf[NotAvailableException] => None
+      case e => throw e
+    }
+  }
+
+}
