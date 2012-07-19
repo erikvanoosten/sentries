@@ -30,7 +30,7 @@ See [SentryExampleApp](/src/main/scala/nl/grons/sentries/examples/SentryExampleA
 
 --- Developer guidelines ---
 
-* Performance and simplicity is obtained by composing functionality form tiny building blocks.
+* Performance and simplicity is obtained by composing functionality from tiny building blocks.
 * If it can't be made friendly to use, then leave it out.
 * Code to make the library friendly to use is not part of the core.
 * Readability of code triumphs all other considerations.
