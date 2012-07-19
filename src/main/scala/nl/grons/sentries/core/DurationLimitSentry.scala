@@ -26,9 +26,6 @@ import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
  * A new instance can be obtained through the {@link Sentries} mixin.
  */
 class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) extends ChainableSentry {
-  /**
-   * @return a simple describing identifier that is unique per sentry chain, e.g. "rateLimit"
-   */
   val sentryType = "durationLimit"
 
   private[this] val duration = durationLimitMillis.milliseconds

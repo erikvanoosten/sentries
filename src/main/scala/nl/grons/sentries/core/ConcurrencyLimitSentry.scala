@@ -18,20 +18,27 @@ package nl.grons.sentries.core
 
 import java.util.concurrent.Semaphore
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
+import com.yammer.metrics.scala.Instrumented
+import com.yammer.metrics.core.Gauge
 
 /**
  * A sentry that limits the number of concurrent invocations.
  * A new instance can be obtained through the {@link Sentries} mixin.
  */
-class ConcurrencyLimitSentry(val resourceName: String, concurrencyLimit: Int) extends ChainableSentry {
+class ConcurrencyLimitSentry(
+  val resourceName: String,
+  concurrencyLimit: Int,
+  selfType: Class[_]
+) extends ChainableSentry with Instrumented {
 
-  /**
-   * @return a simple describing identifier that is unique per sentry chain, e.g. "rateLimit"
-   */
   val sentryType = "concurrencyLimit"
 
   // Note: as we only use tryAcquire, no fairness is necessary.
   private[this] val semaphore = new Semaphore(concurrencyLimit, false)
+
+  metricsRegistry.newGauge(selfType, constructName("available"), new Gauge[Int] {
+    def value = semaphore.availablePermits()
+  })
 
   /**
    * Run the given code block in the context of this sentry, and return its value.
@@ -46,6 +53,9 @@ class ConcurrencyLimitSentry(val resourceName: String, concurrencyLimit: Int) ex
   }
 
   def reset() {}
+
+  private def constructName(nameParts: String*) = (Seq(resourceName, sentryType) ++ nameParts).mkString(".")
+
 }
 
 /**

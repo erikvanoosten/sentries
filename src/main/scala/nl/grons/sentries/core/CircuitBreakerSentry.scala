@@ -34,9 +34,6 @@ class CircuitBreakerSentry(
   selfType: Class[_]
 ) extends ChainableSentry with Instrumented {
 
-  /**
-   * @return a simple describing identifier that is unique per sentry chain, e.g. "rateLimit"
-   */
   val sentryType = "failLimit"
 
   private[this] val state = new AtomicReference[State](new FlowState(this))
