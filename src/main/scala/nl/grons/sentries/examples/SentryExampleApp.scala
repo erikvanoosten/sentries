@@ -22,6 +22,7 @@ import scala.collection.JavaConverters._
 import nl.grons.sentries.{Sentries, SentrySupport}
 import nl.grons.sentries.support._
 import scala.util.Random
+import nl.grons.sentries.core.LoadBalancer
 
 /**
  * Some runnable examples to show how to use sentries.

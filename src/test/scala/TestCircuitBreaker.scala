@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import nl.grons.sentries.{SentrySupport}
+import nl.grons.sentries.SentrySupport
 
 //
 //import org.specs.SpecificationWithJUnit
