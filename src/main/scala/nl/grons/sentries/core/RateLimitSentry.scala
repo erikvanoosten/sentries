@@ -12,8 +12,8 @@ package nl.grons.sentries.core
 
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
-import com.yammer.metrics.scala.Instrumented
 import com.yammer.metrics.core.Gauge
+import com.yammer.metrics.Metrics
 
 /**
  * A sentry that limits the number of invocations per time span.
@@ -23,15 +23,15 @@ class RateLimitSentry(
   val resourceName: String,
   rate: Int,
   timeSpanMillis: Long,
-  selfType: Class[_]
-) extends ChainableSentry with Instrumented {
+  owner: Class[_]
+) extends ChainableSentry {
 
   private[this] val tokens = new AtomicInteger(rate)
   private[this] val nextTokenReleaseMillis = new AtomicLong(0L)
 
   val sentryType = "rateLimit"
 
-  metricsRegistry.newGauge(selfType, constructName("available"), new Gauge[Int] {
+  Metrics.newGauge(owner, constructName("available"), new Gauge[Int] {
     def value = tokens.get()
   })
 

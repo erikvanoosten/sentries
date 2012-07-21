@@ -101,7 +101,7 @@ class SentriesRegistry() {
 
   /**
    * Returns a new {@link ConcurrentMap} implementation. Subclass this to do weird things with
-   * your own {@link MetricsRegistry} implementation.
+   * your own {@link SentriesRegistry} implementation.
    *
    * @return a new {@link mutable.ConcurrentMap}
    */

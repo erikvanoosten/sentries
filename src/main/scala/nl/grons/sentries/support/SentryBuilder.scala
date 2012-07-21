@@ -15,7 +15,7 @@ import nl.grons.sentries.core._
 /**
  * Lots of code to make creating sentries trivially easy.
  */
-abstract class SentryBuilder(selfType: Class[_], val resourceName: String, sentryRegistry: SentriesRegistry) {
+abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRegistry: SentriesRegistry) {
 
   /**
    * Append a circuit breaker sentry to the current sentry.
@@ -25,7 +25,7 @@ abstract class SentryBuilder(selfType: Class[_], val resourceName: String, sentr
    * @return a new sentry that applies a circuit breaker after the current sentry behavior
    */
   def withFailLimit(failLimit: Int, retryDelayMillis: Long): NamedSentry with SentryBuilder =
-    withSentry(new CircuitBreakerSentry(resourceName, failLimit, retryDelayMillis, selfType))
+    withSentry(new CircuitBreakerSentry(resourceName, failLimit, retryDelayMillis, owner))
 
   /**
    * Append a concurrency limit sentry to the current sentry.
@@ -34,7 +34,7 @@ abstract class SentryBuilder(selfType: Class[_], val resourceName: String, sentr
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
   def withConcurrencyLimit(concurrencyLimit: Int): NamedSentry with SentryBuilder =
-    withSentry(new ConcurrencyLimitSentry(resourceName, concurrencyLimit, selfType))
+    withSentry(new ConcurrencyLimitSentry(resourceName, concurrencyLimit, owner))
 
   /**
    * Append a rate limit sentry to the current sentry.
@@ -44,7 +44,7 @@ abstract class SentryBuilder(selfType: Class[_], val resourceName: String, sentr
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
   def withRateLimit(rate: Int, per: Long): NamedSentry with SentryBuilder =
-    withSentry(new RateLimitSentry(resourceName, rate, per, selfType))
+    withSentry(new RateLimitSentry(resourceName, rate, per, owner))
 
   /**
    * Append a invocation duration limit sentry to the current sentry.
@@ -66,22 +66,22 @@ abstract class SentryBuilder(selfType: Class[_], val resourceName: String, sentr
   def withSentry(andThenSentry: ChainableSentry): NamedSentry with SentryBuilder
 }
 
-class InitialSentryBuilder(selfType: Class[_], resourceName: String, sentryRegistry: SentriesRegistry)
-  extends SentryBuilder(selfType, resourceName, sentryRegistry) {
+class InitialSentryBuilder(owner: Class[_], resourceName: String, sentryRegistry: SentriesRegistry)
+  extends SentryBuilder(owner, resourceName, sentryRegistry) {
 
   def withSentry(sentry: ChainableSentry) = {
-    val s = sentryRegistry.getOrAdd[ChainableSentry](sentry, selfType, resourceName, sentry.sentryType)
-    new ComposingSentryBuilder(selfType, resourceName, sentryRegistry, s)
+    val s = sentryRegistry.getOrAdd[ChainableSentry](sentry, owner, resourceName, sentry.sentryType)
+    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, s)
   }
 }
 
 class ComposingSentryBuilder(
-    selfType: Class[_], resourceName: String, sentryRegistry: SentriesRegistry, val sentry: Sentry)
-  extends SentryBuilder(selfType, resourceName, sentryRegistry) with NamedSentry {
+    owner: Class[_], resourceName: String, sentryRegistry: SentriesRegistry, val sentry: Sentry)
+  extends SentryBuilder(owner, resourceName, sentryRegistry) with NamedSentry {
 
   def withSentry(andThenSentry: ChainableSentry) = {
-    val s = sentryRegistry.getOrAdd[ChainableSentry](andThenSentry, selfType, resourceName, andThenSentry.sentryType)
-    new ComposingSentryBuilder(selfType, resourceName, sentryRegistry, sentry andThen s)
+    val s = sentryRegistry.getOrAdd[ChainableSentry](andThenSentry, owner, resourceName, andThenSentry.sentryType)
+    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, sentry andThen s)
   }
 
   def apply[T](r: => T) = sentry(r)

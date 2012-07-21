@@ -10,10 +10,8 @@
 package nl.grons.sentries.core
 
 import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
-import com.yammer.metrics.scala.Instrumented
 import com.yammer.metrics.core.{MetricName, HealthCheck, Gauge}
-import com.yammer.metrics.HealthChecks
-import java.util.concurrent.TimeUnit
+import com.yammer.metrics.{Metrics, HealthChecks}
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.core.States._
 
@@ -25,14 +23,14 @@ class CircuitBreakerSentry(
   val resourceName: String,
   val failLimit: Int,
   val retryDelayMillis: Long,
-  selfType: Class[_]
-) extends ChainableSentry with Instrumented {
+  owner: Class[_]
+) extends ChainableSentry {
 
   val sentryType = "failLimit"
 
   private[this] val state = new AtomicReference[State](new FlowState(this))
 
-  HealthChecks.register(new HealthCheck(new MetricName(selfType, constructName()).getMBeanName) {
+  HealthChecks.register(new HealthCheck(new MetricName(owner, constructName()).getMBeanName) {
     def check() = state.get match {
       case _: FlowState => HealthCheck.Result.healthy()
       case _: BrokenState => HealthCheck.Result.unhealthy("broken")
@@ -40,16 +38,13 @@ class CircuitBreakerSentry(
     }
   })
 
-  metricsRegistry.newGauge(selfType, constructName("state"), new Gauge[String] {
+  Metrics.newGauge(owner, constructName("state"), new Gauge[String] {
     def value = state.get match {
       case _: FlowState => "flow"
       case _: BrokenState => "broken"
       case _ => "unknown"
     }
   })
-
-  val failureMeter = metricsRegistry.newMeter(
-    selfType, constructName("failureCount"), "failures", TimeUnit.SECONDS)
 
   def apply[T](r: => T): T = {
     state.get.preInvoke()
@@ -60,10 +55,9 @@ class CircuitBreakerSentry(
 
     } catch {
       case e: NotAvailableException =>
-        // embedded sentry is not available, do not update state
+        // embedded sentry indicates 'not available', do not update state
         throw e
       case e: Throwable => {
-        failureMeter.mark()
         state.get.onThrowable(e)
         throw e
       }
