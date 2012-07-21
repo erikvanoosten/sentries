@@ -1,12 +1,14 @@
 name := "sentries"
 
+organization := "nl.grons"
+
 version := "0.1"
 
 scalaVersion := "2.9.1"
 
 libraryDependencies ++= Seq(
-    "com.yammer.metrics" %% "metrics-scala" % "2.1.2",
-    "com.typesafe.akka" % "akka-actor" % "2.0.2",
+    "com.yammer.metrics" % "metrics-core" % "2.1.2",
+    "com.typesafe.akka" % "akka-actor" % "2.0.2"
     // Tests
     // "org.specs2" %% "specs2" % "1.11" % "test"
     //
