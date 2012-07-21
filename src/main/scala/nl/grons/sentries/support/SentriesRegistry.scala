@@ -14,7 +14,6 @@ import com.yammer.metrics.core.{Stoppable, MetricName}
 import java.util.concurrent.{ConcurrentHashMap, CopyOnWriteArrayList}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.ref.WeakReference
 
 /**
  * A registry of sentry instances.
@@ -35,11 +34,7 @@ class SentriesRegistry() {
   def addListener(listener: SentriesRegistryListener) {
     listeners += listener
     sentries.foreach {
-      case (name, sentryRef) =>
-        sentryRef.get match {
-          case Some(sentry) => listener.onSentryAdded(name, sentry)
-          case None => removeSentry(name)
-        }
+      case (name, sentry) => listener.onSentryAdded(name, sentry)
     }
   }
 
@@ -105,8 +100,8 @@ class SentriesRegistry() {
    *
    * @return a new {@link mutable.ConcurrentMap}
    */
-  protected def newSentriesMap(): mutable.ConcurrentMap[MetricName, WeakReference[NamedSentry]] =
-    new ConcurrentHashMap[MetricName, WeakReference[NamedSentry]](1024).asScala
+  protected def newSentriesMap(): mutable.ConcurrentMap[MetricName, NamedSentry] =
+    new ConcurrentHashMap[MetricName, NamedSentry](1024).asScala
 
   /**
    * Gets any existing sentry with the given name or, if none exists, adds the given sentry.
@@ -117,11 +112,11 @@ class SentriesRegistry() {
    * @return either the existing sentry or {@code sentry}
    */
   private def getOrAdd[S <: NamedSentry](name: MetricName, sentry: S): S = {
-    sentries.putIfAbsent(name, new WeakReference(sentry)) match {
-      case Some(existingRef) if existingRef.get.isDefined =>
+    sentries.putIfAbsent(name, sentry) match {
+      case Some(existing) =>
         if (sentry.isInstanceOf[Stoppable]) sentry.asInstanceOf[Stoppable].stop()
-        existingRef.get.get.asInstanceOf[S]
-      case _ =>
+        existing.asInstanceOf[S]
+      case None =>
         notifySentriesAdded(name, sentry)
         sentry
     }
