@@ -42,10 +42,10 @@ class JmxReporter(
     registerBean(name, createMBean(sentry), new ObjectName(name.getMBeanName))
   }
 
-  private def createMBean(sentry: NamedSentry): JmxReporter.NamedSentryMBean = {
+  private def createMBean(sentry: NamedSentry): JmxReporter.SentryMBean = {
     sentry match {
       case s: sentries.core.CircuitBreakerSentry => new JmxReporter.CircuitBreakerSentry(s)
-      case s => new JmxReporter.NamedSentry(s)
+      case s => new JmxReporter.Sentry(s)
     }
   }
 
@@ -82,7 +82,7 @@ class JmxReporter(
     listening = true
   }
 
-  private def registerBean(name: MetricName, bean: JmxReporter.NamedSentryMBean, objectName: ObjectName) {
+  private def registerBean(name: MetricName, bean: JmxReporter.SentryMBean, objectName: ObjectName) {
     server.registerMBean(bean, objectName)
     registeredBeans.put(name, objectName)
   }
@@ -93,7 +93,7 @@ class JmxReporter(
     } catch {
       case e: InstanceNotFoundException =>
         // This is often thrown when the process is shutting down. An application with lots of
-        // metrics will often begin unregistering metrics *after* JMX itself has cleared,
+        // sentries will often begin unregistering sentries *after* JMX itself has cleared,
         // resulting in a huge dump of exceptions as the process is exiting.
         logger.trace("Error unregistering {}", objectName, e);
       case e: MBeanRegistrationException =>
@@ -103,20 +103,17 @@ class JmxReporter(
 }
 
 object JmxReporter {
-  trait NamedSentryMBean {
-    def resourceName: String
+  trait SentryMBean {
     def reset()
   }
-
-  class NamedSentry(val sentry: nl.grons.sentries.support.NamedSentry) extends NamedSentryMBean {
-    def resourceName = sentry.resourceName
+  class Sentry(val sentry: nl.grons.sentries.support.Sentry) extends SentryMBean {
     def reset() { sentry.reset() }
   }
 
-  trait CircuitBreakerSentryMBean extends NamedSentryMBean {
+  trait CircuitBreakerSentryMBean extends SentryMBean {
     def trip()
   }
-  class CircuitBreakerSentry(sentry: nl.grons.sentries.core.CircuitBreakerSentry) extends NamedSentry(sentry) with CircuitBreakerSentryMBean {
+  class CircuitBreakerSentry(sentry: nl.grons.sentries.core.CircuitBreakerSentry) extends Sentry(sentry) with CircuitBreakerSentryMBean {
     def trip() { sentry.trip() }
   }
 }
