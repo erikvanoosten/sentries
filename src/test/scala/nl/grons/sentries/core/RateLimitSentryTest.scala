@@ -20,6 +20,8 @@ import scala.collection.JavaConverters._
  * Tests {@link RateLimitSentry}.
  */
 class RateLimitSentryTest extends Specification {
+  // For an unknown reason, parallel execution under sbt fails.
+  sequential
 
   "The rate limit sentry" should {
     "return value" in new SentryContext {
@@ -42,8 +44,16 @@ class RateLimitSentryTest extends Specification {
       sentry(fastCode) must_== "fast"
       sentry(fastCode) must_== "fast"
       sentry(notInvokedCode) must throwA[NotAvailableException]
-      Thread.sleep(21L)
+      Thread.sleep(41L)
       sentry(fastCode) must_== "fast"
+    }
+
+    "while limited allow invocations after reset()" in new SentryContext {
+      todo
+    }
+
+    "keep allowing invocations after reset()" in new SentryContext {
+      todo
     }
 
     "be multi-thread safe" in new SentryContext {
@@ -58,7 +68,7 @@ class RateLimitSentryTest extends Specification {
         val futures = executor.invokeAll(tasks).asScala
         futuresToOptions(futures).filter(_ == Some("fast")).size must_== 3
 
-        Thread.sleep(21L)
+        Thread.sleep(41L)
 
         // Once more:
         val futures2 = executor.invokeAll(tasks).asScala
@@ -73,14 +83,9 @@ class RateLimitSentryTest extends Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new RateLimitSentry("testSentry", 3, 20L, classOf[ConcurrencyLimitSentryTest])
+    val sentry = new RateLimitSentry("testSentry", 3, 40L, classOf[ConcurrencyLimitSentryTest])
 
     def fastCode = "fast"
-
-    def slowCode = {
-      Thread.sleep(5L)
-      "slow"
-    }
 
     def throwAnIllegalArgumentException: String = {
       throw new IllegalArgumentException("fail")

@@ -18,7 +18,10 @@ import nl.grons.sentries.support.NotAvailableException
  * Tests {@link CircuitBreakerSentry}.
  */
 class CircuitBreakerSentryTest extends Specification {
-  "A CircuitBreaker" should {
+  // For an unknown reason, parallel execution under sbt fails.
+  sequential
+
+  "A CircuitBreaker sentry" should {
     "pass return value in flow state" in new SentryContext {
       for (i <- 1 to 20) {
         sentry(fastCode) must_== "fast"
