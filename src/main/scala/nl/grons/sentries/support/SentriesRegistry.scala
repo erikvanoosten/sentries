@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012. Erik van Oosten. All rights reserved.
+ * Copyright (c) 2012 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -11,7 +11,7 @@
 package nl.grons.sentries.support
 
 import com.yammer.metrics.core.{Stoppable, MetricName}
-import java.util.concurrent.{ConcurrentHashMap, CopyOnWriteArrayList}
+import java.util.concurrent.{Executors, ConcurrentHashMap, CopyOnWriteArrayList}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
@@ -130,4 +130,8 @@ class SentriesRegistry() {
     listeners.foreach(_.onSentryAdded(name, sentry))
   }
 
+}
+
+object SentriesRegistry {
+  val executor = Executors.newCachedThreadPool()
 }

@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012. Erik van Oosten. All rights reserved.
+ * Copyright (c) 2012 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -12,8 +12,8 @@ package nl.grons.sentries.core
 
 import akka.dispatch.{ExecutionContext, Await, Future}
 import akka.util.duration._
-import java.util.concurrent.{Executors, TimeoutException}
-import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
+import java.util.concurrent.TimeoutException
+import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException, ChainableSentry}
 
 /**
  * A sentry that limits the duration of an invocation.
@@ -24,8 +24,6 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
 
   private[this] val duration = durationLimitMillis.milliseconds
 
-  implicit val ec = ExecutionContext.fromExecutorService(Executors.newCachedThreadPool())
-
   /**
    * Run the given code block in the context of this sentry, and return its value.
    *
@@ -33,7 +31,7 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
    */
   def apply[T](r: => T) = {
     try {
-      Await.result(Future(r), duration)
+      Await.result(Future(r)(DurationLimitSentry.ec), duration)
     } catch {
       case e: TimeoutException =>
         throw new DurationLimitExceededException(
@@ -42,6 +40,10 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
   }
 
   def reset() {}
+}
+
+object DurationLimitSentry {
+  implicit private val ec = ExecutionContext.fromExecutorService(SentriesRegistry.executor)
 }
 
 /**
