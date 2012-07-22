@@ -18,7 +18,7 @@ import nl.grons.sentries.support.NotAvailableException
  */
 class DurationLimitSentryTest extends org.specs2.mutable.Specification {
 
-  "The sentry" should {
+  "The duration limit sentry" should {
     "return value for timely code" in new SentryContext {
       sentry(fastCode) must_== "fast"
     }
