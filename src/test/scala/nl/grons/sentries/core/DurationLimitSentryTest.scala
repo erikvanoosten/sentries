@@ -20,7 +20,7 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
 
   "The sentry" should {
     "return value for timely code" in new SentryContext {
-      sentry(quickCode) must_== "fast"
+      sentry(fastCode) must_== "fast"
     }
 
     "throw NotAvailableException for slow code" in new SentryContext {
@@ -30,12 +30,16 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
     "return value for timely code" in new SentryContext {
       sentry(failingCode) must throwA[IllegalArgumentException]
     }
+
+    "be multi-thread safe" in {
+      todo
+    }
   }
 
   trait SentryContext extends Scope {
     val sentry = new DurationLimitSentry("testSentry", 10L)
 
-    def quickCode = "fast"
+    def fastCode = "fast"
 
     def slowCode = {
       Thread.sleep(20L)
