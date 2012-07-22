@@ -18,12 +18,13 @@ import scala.collection.JavaConverters._
 import java.util.concurrent.ConcurrentHashMap
 import org.slf4j.LoggerFactory
 import nl.grons.sentries
+import nl.grons.sentries.SentrySupport
 
 /**
  * A reporter which exposes sentries as JMX MBeans.
  */
 class JmxReporter(
-  private[this] val sentryRegistry: SentriesRegistry,
+  private[this] val sentryRegistry: SentriesRegistry = SentrySupport.defaultRegistry,
   private[this] val server: MBeanServer = ManagementFactory.getPlatformMBeanServer()
 ) extends SentriesRegistryListener {
 

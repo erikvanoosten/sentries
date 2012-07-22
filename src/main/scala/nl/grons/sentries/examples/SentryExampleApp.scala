@@ -13,7 +13,7 @@ package examples
 import scala.util.control.Exception._
 import java.util.concurrent.{Future, ExecutionException, Callable, Executors}
 import scala.collection.JavaConverters._
-import nl.grons.sentries.{Sentries, SentrySupport}
+import nl.grons.sentries.SentrySupport
 import nl.grons.sentries.support._
 import scala.util.Random
 import nl.grons.sentries.core.LoadBalancer
@@ -23,7 +23,7 @@ import nl.grons.sentries.core.LoadBalancer
  */
 object SentryExampleApp extends App {
 
-  new JmxReporter(Sentries.defaultRegistry).start()
+  new JmxReporter().start()
 
   val random = new Random()
 

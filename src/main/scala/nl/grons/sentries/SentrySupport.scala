@@ -13,23 +13,23 @@ package nl.grons.sentries
 import nl.grons.sentries.support.{InitialSentryBuilder, SentriesRegistry, SentryBuilder}
 
 /**
- * The mixin trait for classes that failLimit and use resource availability sentries.
+ * The mixin trait for classes that want to construct sentries.
  */
 trait SentrySupport {
 
   /**
-   * Returns a new sentry builder for the current class.
+   * Returns a new sentry builder with the current class as owner.
    */
   def sentry(resourceName: String): SentryBuilder =
     new InitialSentryBuilder(getClass, resourceName, sentryRegistry)
 
   /**
-   * Returns the SentriesRegistry for the class.
+   * Returns the default SentriesRegistry. Override to use another.
    */
-  def sentryRegistry = Sentries.defaultRegistry
+  def sentryRegistry = SentrySupport.defaultRegistry
 }
 
 
-object Sentries {
+object SentrySupport {
   val defaultRegistry = new SentriesRegistry
 }
