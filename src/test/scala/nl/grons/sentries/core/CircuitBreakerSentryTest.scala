@@ -19,6 +19,30 @@ import nl.grons.sentries.support.NotAvailableException
  */
 class CircuitBreakerSentryTest extends Specification {
   "A CircuitBreaker" should {
+    "pass return value in flow state" in new SentryContext {
+      for (i <- 1 to 20) {
+        sentry(fastCode) must_== "fast"
+      }
+    }
+
+    "rethrow exceptions in flow state" in new SentryContext {
+      for (i <- 1 to 10) {
+        sentry.reset() // Needed to stay in flow state.
+        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+      }
+    }
+
+    "be unavailable in broken state" in new SentryContext {
+      sentry.trip()
+      sentry(fastCode) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(throwAnIllegalArgumentException) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(throwANotAvailableException) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+    }
+
     "keep flowing (no exceptions are thrown)" in new SentryContext {
       for (i <- 1 to 20) {
         sentry(fastCode) must not(throwA[CircuitBreakerBrokenException])
@@ -29,19 +53,6 @@ class CircuitBreakerSentryTest extends Specification {
       for (i <- 1 to 10) {
         sentry(fastCode) must not(throwA[CircuitBreakerBrokenException])
         sentry(throwAnIllegalArgumentException) must not(throwA[CircuitBreakerBrokenException])
-      }
-    }
-
-    "pass return value" in new SentryContext {
-      for (i <- 1 to 20) {
-        sentry(fastCode) must_== "fast"
-      }
-    }
-
-    "rethrow exceptions" in new SentryContext {
-      for (i <- 1 to 10) {
-        sentry(fastCode) // Needed to stay in flow state.
-        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
       }
     }
 
