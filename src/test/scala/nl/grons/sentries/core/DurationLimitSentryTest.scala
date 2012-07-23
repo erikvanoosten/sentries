@@ -37,12 +37,12 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new DurationLimitSentry("testSentry", 10L)
+    val sentry = new DurationLimitSentry("testSentry", 50L)
 
     def fastCode = "fast"
 
     def slowCode = {
-      Thread.sleep(20L)
+      Thread.sleep(100L)
       "slow"
     }
 
