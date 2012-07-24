@@ -4,7 +4,7 @@ organization := "nl.grons"
 
 version := "0.1"
 
-scalaVersion := "2.9.1"
+scalaVersion := "2.9.2"
 
 libraryDependencies ++= Seq(
     "com.yammer.metrics" % "metrics-core" % "2.1.2",
@@ -18,11 +18,9 @@ libraryDependencies ++= Seq(
   )
 
 resolvers ++= Seq(
-    "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
-    "snapshots" at "http://oss.sonatype.org/content/repositories/snapshots",
-    "releases"  at "http://oss.sonatype.org/content/repositories/releases",
-    "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
-  )
+  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
+  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+)
 
 publishTo <<= version { v: String =>
   val nexus = "https://oss.sonatype.org/"
@@ -49,7 +47,7 @@ pomExtra := (
     <developer>
       <id>erikvanoosten</id>
       <name>Erik van Oosten</name>
-      <url>http://www.grons.nl</url>
+      <url>http://day-to-day-stuff.blogspot.com/</url>
     </developer>
   </developers>
 )
