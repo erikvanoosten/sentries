@@ -6,6 +6,13 @@ version := "0.2-SNAPSHOT"
 
 scalaVersion := "2.9.2"
 
+crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2")
+
+resolvers ++= Seq(
+  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
+  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+)
+
 libraryDependencies ++= Seq(
     "com.yammer.metrics" % "metrics-core" % "2.1.2",
     "com.typesafe.akka" % "akka-actor" % "2.0.2",
@@ -17,10 +24,11 @@ libraryDependencies ++= Seq(
     // "org.specs2" %% "specs2-scalaz-core" % "5.1-SNAPSHOT" % "test"
   )
 
-resolvers ++= Seq(
-  "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
-  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
-)
+javacOptions ++= Seq("-Xmx512m", "-Xms128m", "-Xss10m")
+
+javaOptions += "-Xmx512m"
+
+scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 publishTo <<= version { v: String =>
   val nexus = "https://oss.sonatype.org/"
