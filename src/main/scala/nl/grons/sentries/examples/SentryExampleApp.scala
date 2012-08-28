@@ -204,9 +204,9 @@ object SentryExampleApp extends App {
   /**
    * Little helper method to assert that the given code throws an exception of given type.
    */
-  def assertThrows[E <: Throwable](c: => Unit) {
+  def assertThrows[E <: Throwable](c: => Unit)(implicit m: Manifest[E]) {
     val e = allCatch.either(c)
-    assert(e.isLeft && e.left.get.isInstanceOf[E])
+    assert(e.isLeft && e.left.get.getClass == m.getClass)
   }
 
   // Convert normal Future results to a Some, and NotAvailableExceptions to a None:
