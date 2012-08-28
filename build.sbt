@@ -2,27 +2,26 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.2-SNAPSHOT"
+version := "0.1.1"
 
 scalaVersion := "2.9.2"
 
 crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2")
+// crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2", "2.10.0-M7")
 
 resolvers ++= Seq(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 )
 
-libraryDependencies ++= Seq(
-    "com.yammer.metrics" % "metrics-core" % "2.1.2",
-    "com.typesafe.akka" % "akka-actor" % "2.0.2",
-    // Tests
-    "org.specs2" %% "specs2" % "1.11" % "test"
-    //
-    // with Scala 2.8.x (specs2 1.5 is the latest version for scala 2.8.x)
-    // "org.specs2" %% "specs2" % "1.5" % "test",
-    // "org.specs2" %% "specs2-scalaz-core" % "5.1-SNAPSHOT" % "test"
-  )
+libraryDependencies <++= (scalaVersion) { v: String =>
+  if (v.startsWith("2.10"))     Seq("com.yammer.metrics" % "metrics-core" % "2.1.2",
+                                    "org.specs2" %% "specs2" % "1.11" % "test")
+  else if (v.startsWith("2.9")) Seq("com.yammer.metrics" % "metrics-core" % "2.1.2",
+                                    "com.typesafe.akka" % "akka-actor" % "2.0.2",
+                                    "org.specs2" %% "specs2" % "1.11" % "test")
+  else Seq()
+}
 
 javacOptions ++= Seq("-Xmx512m", "-Xms128m", "-Xss10m")
 
