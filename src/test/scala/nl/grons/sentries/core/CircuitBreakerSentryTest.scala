@@ -18,8 +18,6 @@ import nl.grons.sentries.support.NotAvailableException
  * Tests {@link CircuitBreakerSentry}.
  */
 class CircuitBreakerSentryTest extends Specification {
-  // For an unknown reason, parallel execution under sbt fails.
-  sequential
 
   "A CircuitBreaker sentry" should {
     "pass return value in flow state" in new SentryContext {
@@ -69,14 +67,14 @@ class CircuitBreakerSentryTest extends Specification {
 
     "recover to flow state upon success after retry timeout" in new SentryContext {
       sentry.trip()
-      Thread.sleep(21L)
+      Thread.sleep(51L)
       sentry(fastCode) must_== "fast"
       sentry(fastCode) must_== "fast"
     }
 
     "stay in broken state upon failure after retry timeout" in new SentryContext {
       sentry.trip()
-      Thread.sleep(21L)
+      Thread.sleep(51L)
       // One attempt to call the code:
       sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
       sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
@@ -128,7 +126,7 @@ class CircuitBreakerSentryTest extends Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new CircuitBreakerSentry("testSentry", 3, 20L, classOf[CircuitBreakerSentryTest])
+    val sentry = new CircuitBreakerSentry("testSentry", 3, 50L, classOf[CircuitBreakerSentryTest])
 
     def fastCode = "fast"
 
