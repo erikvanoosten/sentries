@@ -47,7 +47,7 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
     }
 
     def failingCode: String = {
-      throw new IllegalArgumentException("fail")
+      throw new IllegalArgumentException("expected exception")
     }
   }
 
