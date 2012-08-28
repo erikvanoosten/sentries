@@ -24,7 +24,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param retryDelayMillis timeout for trying again
    * @return a new sentry that applies a circuit breaker after the current sentry behavior
    */
-  def withFailLimit(failLimit: Int, retryDelayMillis: Long): NamedSentry with SentryBuilder =
+  def withFailLimit(failLimit: Int, retryDelayMillis: Long): ChainableSentry with SentryBuilder =
     withSentry(new CircuitBreakerSentry(resourceName, failLimit, retryDelayMillis, owner))
 
   /**
@@ -33,7 +33,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param concurrencyLimit number of concurrently allowed invocations
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
-  def withConcurrencyLimit(concurrencyLimit: Int): NamedSentry with SentryBuilder =
+  def withConcurrencyLimit(concurrencyLimit: Int): ChainableSentry with SentryBuilder =
     withSentry(new ConcurrencyLimitSentry(resourceName, concurrencyLimit, owner))
 
   /**
@@ -43,7 +43,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param per the time unit in millis
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
-  def withRateLimit(rate: Int, per: Long): NamedSentry with SentryBuilder =
+  def withRateLimit(rate: Int, per: Long): ChainableSentry with SentryBuilder =
     withSentry(new RateLimitSentry(resourceName, rate, per, owner))
 
   /**
@@ -54,7 +54,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param durationLimitMillis the maximum duration of a call in millis
    * @return a new sentry that applies a duration limit after the current sentry behavior
    */
-  def withDurationLimit(durationLimitMillis: Long): NamedSentry with SentryBuilder =
+  def withDurationLimit(durationLimitMillis: Long): ChainableSentry with SentryBuilder =
     withSentry(new DurationLimitSentry(resourceName, durationLimitMillis))
 
   /**
@@ -63,7 +63,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param andThenSentry the sentry to add
    * @return a new sentry that applies the given sentry after the current sentry behavior
    */
-  def withSentry(andThenSentry: ChainableSentry): NamedSentry with SentryBuilder
+  def withSentry(andThenSentry: ChainableSentry): ChainableSentry with SentryBuilder
 }
 
 class InitialSentryBuilder(owner: Class[_], resourceName: String, sentryRegistry: SentriesRegistry)
@@ -77,7 +77,7 @@ class InitialSentryBuilder(owner: Class[_], resourceName: String, sentryRegistry
 
 class ComposingSentryBuilder(
     owner: Class[_], resourceName: String, sentryRegistry: SentriesRegistry, val sentry: Sentry)
-  extends SentryBuilder(owner, resourceName, sentryRegistry) with NamedSentry {
+  extends SentryBuilder(owner, resourceName, sentryRegistry) with ChainableSentry {
 
   def withSentry(andThenSentry: ChainableSentry) = {
     val s = sentryRegistry.getOrAdd[ChainableSentry](andThenSentry, owner, resourceName, andThenSentry.sentryType)
@@ -89,4 +89,6 @@ class ComposingSentryBuilder(
   def reset() {
     sentry.reset()
   }
+
+  def sentryType = null
 }

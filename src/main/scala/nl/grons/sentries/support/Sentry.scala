@@ -61,6 +61,8 @@ trait NamedSentry extends Sentry {
 trait ChainableSentry extends NamedSentry {
   /**
    * @return a simple describing identifier that is unique per sentry chain, e.g. "rateLimit"
+   *         This name is used to uniquely name attributes in JMX; it may be null or empty for sentries that
+   *         do not register in JMX.
    */
   def sentryType: String
 }
