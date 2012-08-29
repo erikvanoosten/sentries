@@ -14,6 +14,15 @@ import nl.grons.sentries.support.{InitialSentryBuilder, SentriesRegistry, Sentry
 
 /**
  * The mixin trait for classes that want to construct sentries.
+ *
+ * Main usage pattern is as follows:
+ * {{{
+ *   class YourClass extends nl.grons.sentries.SentrySupport {
+ *     private[this] sentry = sentry("resourceName") withXXX() withYYY()
+ *   }
+ * }}}
+ *
+ * For the available `withXXX` methods use auto completion or see [[nl.grons.sentries.support.SentryBuilder SentryBuilder]].
  */
 trait SentrySupport {
 
