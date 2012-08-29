@@ -14,6 +14,8 @@ import nl.grons.sentries.core._
 
 /**
  * Lots of code to make creating sentries trivially easy.
+ *
+ * For usage instructions see [[nl.grons.sentries.SentrySupport SentrySupport]].
  */
 abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRegistry: SentriesRegistry) {
 
@@ -49,7 +51,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
   /**
    * Append a invocation duration limit sentry to the current sentry.
    *
-   * Note: in the Scala 2.9.1 build this sentry uses Akka Futures.
+   * Note: Akka Futures are used in the Scala 2.9 builds.
    *
    * @param durationLimitMillis the maximum duration of a call in millis
    * @return a new sentry that applies a duration limit after the current sentry behavior
@@ -64,25 +66,29 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @return a new sentry that applies the given sentry after the current sentry behavior
    */
   def withSentry(andThenSentry: ChainableSentry): ChainableSentry with SentryBuilder
+
+  /** Returns the registered instance of the sentry (when applicable). */
+  protected def registered(sentry: ChainableSentry): ChainableSentry =
+    // Only register sentries with a sentryType.
+    if (sentry.sentryType == null)
+      sentry
+    else
+      sentryRegistry.getOrAdd[ChainableSentry](sentry, owner, resourceName, sentry.sentryType)
 }
 
 class InitialSentryBuilder(owner: Class[_], resourceName: String, sentryRegistry: SentriesRegistry)
   extends SentryBuilder(owner, resourceName, sentryRegistry) {
 
-  def withSentry(sentry: ChainableSentry) = {
-    val s = sentryRegistry.getOrAdd[ChainableSentry](sentry, owner, resourceName, sentry.sentryType)
-    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, s)
-  }
+  def withSentry(sentry: ChainableSentry) =
+    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, registered(sentry))
 }
 
 class ComposingSentryBuilder(
     owner: Class[_], resourceName: String, sentryRegistry: SentriesRegistry, val sentry: Sentry)
   extends SentryBuilder(owner, resourceName, sentryRegistry) with ChainableSentry {
 
-  def withSentry(andThenSentry: ChainableSentry) = {
-    val s = sentryRegistry.getOrAdd[ChainableSentry](andThenSentry, owner, resourceName, andThenSentry.sentryType)
-    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, sentry andThen s)
-  }
+  def withSentry(andThenSentry: ChainableSentry) =
+    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, sentry andThen registered(andThenSentry))
 
   def apply[T](r: => T) = sentry(r)
 

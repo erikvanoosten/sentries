@@ -11,7 +11,7 @@
 package nl.grons.sentries.support
 
 /**
- * A resource availability sentry.
+ * A resource availability sentry, 'Sentry' for short.
  */
 trait Sentry {
 
@@ -52,7 +52,7 @@ trait Sentry {
  */
 trait NamedSentry extends Sentry {
   /**
-   * @return a string describing the resource that is protected, e.g. "mysql:server-b.com:3336"
+   * @return a string describing the resource that is protected, e.g. "mysql:server-b.com:3336".
    *         It is used in exceptions and visible through JMX.
    */
   def resourceName: String
@@ -60,9 +60,11 @@ trait NamedSentry extends Sentry {
 
 trait ChainableSentry extends NamedSentry {
   /**
-   * @return a simple describing identifier that is unique per sentry chain, e.g. "rateLimit"
-   *         This name is used to uniquely name attributes in JMX; it may be null or empty for sentries that
-   *         do not register in JMX.
+   * @return a simple describing identifier that is unique per sentry chain, e.g. "rateLimit".
+   *         `ResourceName` plus `sentryType` uniquely name each sentry. The sentry registry
+   *         enforces this. The `sentryType` is also used in JMX to uniquely name bean properties
+   *         for a resource.
+   *         `null` for sentry wrappers, that must not be registered.
    */
   def sentryType: String
 }
