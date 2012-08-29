@@ -28,7 +28,7 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
     }
 
     "return value for timely code" in new SentryContext {
-      sentry(failingCode) must throwA[IllegalArgumentException]
+      sentry(failingCode) must throwA[ExpectedException]
     }
 
     "be multi-thread safe" in {
@@ -47,9 +47,9 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
     }
 
     def failingCode: String = {
-      throw new IllegalArgumentException("expected exception")
+      throw new ExpectedException
     }
   }
-
 }
 
+class ExpectedException extends Exception
