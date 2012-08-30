@@ -19,17 +19,17 @@ import com.yammer.metrics.core.MetricName
 trait SentriesRegistryListener extends EventListener {
 
   /**
-   * Called when a sentry has been added to the {@link SentriesRegistry}.
+   * Called when a sentry has been added to the [[nl.grons.sentries.support.SentriesRegistry]].
    *
-   * @param name   the name of the {@link Sentry}
-   * @param sentry the {@link Sentry}
+   * @param name   the name of the sentry
+   * @param sentry the sentry
    */
   def onSentryAdded(name: MetricName, sentry: NamedSentry)
 
   /**
-   * Called when a sentry has been removed from the {@link SentriesRegistry}.
+   * Called when a sentry has been removed from the [[nl.grons.sentries.support.SentriesRegistry]].
    *
-   * @param name the name of the {@link Sentry}
+   * @param name the name of the sentry
    */
   def onSentryRemoved(name: MetricName)
 

@@ -17,7 +17,7 @@ import nl.grons.sentries.core.States._
 
 /**
  * A sentry that limits the number of consecutive failures; a.k.a. a circuit breaker.
- * A new instance can be obtained through the {@link Sentries} mixin.
+ * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  */
 class CircuitBreakerSentry(
   val resourceName: String,

@@ -17,7 +17,7 @@ import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException, Chain
 
 /**
  * A sentry that limits the duration of an invocation.
- * A new instance can be obtained through the {@link Sentries} mixin.
+ * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  *
  * WARNING: do NOT use this sentry when you invoke it from 1) a [[akka.dispatch.Future]] or 2) an [[akka.actor.Actor]].
  * For such circumstances you are MUCH better of with a timeout on the enclosing future or a timeout message
@@ -33,7 +33,7 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
   /**
    * Run the given code block in the context of this sentry, and return its value.
    *
-   * When an invocations takes too long, a {@link NotAvailableException} is thrown.
+   * When an invocations takes too long, a [[nl.grons.sentries.support.NotAvailableException]] is thrown.
    */
   def apply[T](r: => T) = {
     try {

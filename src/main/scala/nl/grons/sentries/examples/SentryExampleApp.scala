@@ -32,7 +32,7 @@ object SentryExampleApp extends App {
    */
   class SimpleExampleService(val name: String) {
     /**
-     * Throws a {@link NullPointerException} when parameter is null.
+     * Throws a [[java.lang.NullPointerException]] when parameter is null.
      */
     def doIt(param: String): Int = {
       param.length % 2
@@ -117,7 +117,7 @@ object SentryExampleApp extends App {
       /**
        * 'resources' given the current set of resource and their sentries for each invocation of the load balancer.
        * So if you're doing fancy stuff like remote look-ups (for example in Zookeeper) you might want to consider
-       * caching the result or mixin the {@link Caching} trait.
+       * caching the result or mixin the (TODO) [[Caching]] trait.
        *
        * Another solution is to implement 'resources' as a val, as we do here.
        *
@@ -168,7 +168,7 @@ object SentryExampleApp extends App {
   // (in theory) safely do 6 invocations concurrently.
   // In practice, when threads behave according to the herd-effect multiple threads can race for the same resource.
   // As each resource is only tried once, any thread might miss a resource that became available just after its
-  // use was attempted. To see how this works, just replace the duration in {@link Example2.callService(String)}
+  // use was attempted. To see how this works, just replace the duration in [[Example2.callService(String)]]
   // with a fixed delay.
   {
     val executor = Executors.newFixedThreadPool(6)

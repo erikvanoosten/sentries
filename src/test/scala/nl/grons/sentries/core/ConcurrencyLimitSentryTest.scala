@@ -17,7 +17,7 @@ import java.util.concurrent.{ExecutionException, Future, Callable, Executors}
 import scala.collection.JavaConverters._
 
 /**
- * Tests {@link ConcurrencyLimitSentry}.
+ * Tests [[nl.grons.sentries.core.ConcurrencyLimitSentry]].
  */
 class ConcurrencyLimitSentryTest extends Specification {
 

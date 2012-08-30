@@ -14,7 +14,7 @@ import org.specs2.specification.Scope
 import nl.grons.sentries.support.NotAvailableException
 
 /**
- * Tests {@link DurationLimitSentry}.
+ * Tests [[nl.grons.sentries.core.DurationLimitSentry]].
  */
 class DurationLimitSentryTest extends org.specs2.mutable.Specification {
 

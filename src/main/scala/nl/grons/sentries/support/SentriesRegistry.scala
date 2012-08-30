@@ -24,8 +24,8 @@ class SentriesRegistry() {
   private[this] val sentries = newSentriesMap()
 
   /**
-   * Adds a {@link SentriesRegistryListener} to a collection of listeners that will be notified on
-   * sentry creation.  Listeners will be notified in the order in which they are added.
+   * Adds a [[nl.grons.sentries.support.SentriesRegistryListener]] to a collection of listeners that will
+   * be notified on sentry creation.  Listeners will be notified in the order in which they are added.
    * <p/>
    * <b>N.B.:</b> The listener will be notified of all existing sentries when it first registers.
    *
@@ -39,7 +39,7 @@ class SentriesRegistry() {
   }
 
   /**
-   * Removes a {@link SentriesRegistryListener} from this registry's collection of listeners.
+   * Removes a [[nl.grons.sentries.support.SentriesRegistryListener]] from this registry's collection of listeners.
    *
    * @param listener the listener that will be removed
    */
@@ -84,7 +84,7 @@ class SentriesRegistry() {
   }
 
   /**
-   * Override to customize how {@link MetricName}s are created.
+   * Override to customize how [[com.yammer.metrics.core.MetricName]]s are created.
    *
    * @param sentryOwner the class which owns the sentry
    * @param name  the name of the sentry
@@ -95,10 +95,10 @@ class SentriesRegistry() {
     new MetricName(sentryOwner, name + "." + sentryType)
 
   /**
-   * Returns a new {@link ConcurrentMap} implementation. Subclass this to do weird things with
-   * your own {@link SentriesRegistry} implementation.
+   * Returns a new [[scala.collection.mutable.ConcurrentMap]] implementation. Subclass this to do weird things with
+   * your own [[nl.grons.sentries.support.SentriesRegistry]] implementation.
    *
-   * @return a new {@link mutable.ConcurrentMap}
+   * @return a new [[scala.collection.mutable.ConcurrentMap]]
    */
   protected def newSentriesMap(): mutable.ConcurrentMap[MetricName, NamedSentry] =
     new ConcurrentHashMap[MetricName, NamedSentry](1024).asScala

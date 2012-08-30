@@ -34,10 +34,10 @@ class JmxReporter(
 
 
   /**
-   * Called when a sentry has been added to the {@link SentriesRegistry}.
+   * Called when a sentry has been added to the [[nl.grons.sentries.support.SentriesRegistry]].
    *
-   * @param name   the name of the { @link Sentry}
-   * @param sentry the { @link Sentry}
+   * @param name   the name of the sentry
+   * @param sentry the sentry
    */
   def onSentryAdded(name: MetricName, sentry: NamedSentry) {
     registerBean(name, createMBean(sentry), new ObjectName(name.getMBeanName))
@@ -51,19 +51,19 @@ class JmxReporter(
   }
 
   /**
-   * Called when a sentry has been removed from the {@link SentriesRegistry}.
+   * Called when a sentry has been removed from the [[nl.grons.sentries.support.SentriesRegistry]].
    *
-   * @param name the name of the { @link Sentry}
+   * @param name the name of the sentry
    */
   def onSentryRemoved(name: MetricName) {
     unregisterBean(new ObjectName(name.getMBeanName))
   }
 
   /**
-   * Returns a new {@link ConcurrentMap} implementation. Subclass this to do weird things with
-   * your own {@link JmxReporter} implementation.
+   * Returns a new [[scala.collection.mutable.ConcurrentMap]] implementation. Subclass this to do weird things with
+   * your own [[nl.grons.sentries.support.JmxReporter]] implementation.
    *
-   * @return a new {@link mutable.ConcurrentMap}
+   * @return a new [[scala.collection.mutable.ConcurrentMap]]
    */
   protected def newRegisteredBeansMap(): mutable.ConcurrentMap[MetricName, ObjectName] =
     new ConcurrentHashMap[MetricName, ObjectName](1024).asScala

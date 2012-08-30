@@ -17,7 +17,7 @@ import com.yammer.metrics.Metrics
 
 /**
  * A sentry that limits the number of concurrent invocations.
- * A new instance can be obtained through the {@link Sentries} mixin.
+ * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  */
 class ConcurrencyLimitSentry(
   val resourceName: String,
@@ -37,7 +37,7 @@ class ConcurrencyLimitSentry(
   /**
    * Run the given code block in the context of this sentry, and return its value.
    *
-   * When there are too many concurrent invocations, a {@link NotAvailableException} is thrown.
+   * When there are too many concurrent invocations, a [[nl.grons.sentries.support.NotAvailableException]] is thrown.
    */
   def apply[T](r: => T) = {
     if (!semaphore.tryAcquire()) throw new ConcurrencyLimitExceededException(

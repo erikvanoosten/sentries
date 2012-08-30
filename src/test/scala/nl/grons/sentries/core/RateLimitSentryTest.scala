@@ -17,7 +17,7 @@ import java.util.concurrent.{ExecutionException, Future, Callable, Executors}
 import scala.collection.JavaConverters._
 
 /**
- * Tests {@link RateLimitSentry}.
+ * Tests [[nl.grons.sentries.core.RateLimitSentry]].
  */
 class RateLimitSentryTest extends Specification {
   // For an unknown reason, parallel execution under sbt fails.

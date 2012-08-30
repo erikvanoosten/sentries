@@ -15,7 +15,7 @@ import org.specs2.specification.Scope
 import nl.grons.sentries.support.NotAvailableException
 
 /**
- * Tests {@link CircuitBreakerSentry}.
+ * Tests [[nl.grons.sentries.core.CircuitBreakerSentry]].
  */
 class CircuitBreakerSentryTest extends Specification {
 

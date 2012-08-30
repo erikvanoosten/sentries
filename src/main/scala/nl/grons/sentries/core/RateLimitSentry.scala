@@ -17,7 +17,7 @@ import com.yammer.metrics.Metrics
 
 /**
  * A sentry that limits the number of invocations per time span.
- * A new instance can be obtained through the {@link Sentries} mixin.
+ * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  */
 class RateLimitSentry(
   val resourceName: String,
@@ -38,7 +38,8 @@ class RateLimitSentry(
   /**
    * Run the given code block in the context of this sentry, and return its value.
    *
-   * When there are too many invocations in the current time span, a {@link NotAvailableException} is thrown.
+   * When there are too many invocations in the current time span,
+   * a [[nl.grons.sentries.support.NotAvailableException]] is thrown.
    */
   def apply[T](r: => T) = {
     if (!acquireToken()) throw new RateLimitExceededException(
