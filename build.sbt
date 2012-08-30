@@ -18,7 +18,7 @@ libraryDependencies <++= (scalaVersion) { v: String =>
   if (v.startsWith("2.10"))     Seq("com.yammer.metrics" % "metrics-core" % "2.1.2",
                                     "org.specs2" %% "specs2" % "1.11" % "test")
   else if (v.startsWith("2.9")) Seq("com.yammer.metrics" % "metrics-core" % "2.1.2",
-                                    "com.typesafe.akka" % "akka-actor" % "2.0.2",
+                                    "com.typesafe.akka" % "akka-actor" % "2.0.3",
                                     "org.specs2" %% "specs2" % "1.11" % "test")
   else Seq()
 }
