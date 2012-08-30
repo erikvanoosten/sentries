@@ -51,7 +51,11 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
   /**
    * Append a invocation duration limit sentry to the current sentry.
    *
-   * Note: Akka Futures are used in the Scala 2.9 builds.
+   * WARNING: do NOT use this sentry when you invoke it from 1) a [[akka.dispatch.Future]] or 2) an [[akka.actor.Actor]].
+   * For such circumstances you are MUCH better of with a timeout on the enclosing future or a timeout message
+   * within the actor.
+   * Reason: this sentry blocks the current thread while waiting on a future that executes the task. Blocking the
+   * current thread is an anti-pattern for futures and actors.
    *
    * @param durationLimitMillis the maximum duration of a call in millis
    * @return a new sentry that applies a duration limit after the current sentry behavior
