@@ -29,6 +29,7 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
   val sentryType = "durationLimit"
 
   private[this] val duration = durationLimitMillis.milliseconds
+  val executionContext = DurationLimitSentry.ec
 
   /**
    * Run the given code block in the context of this sentry, and return its value.
@@ -37,7 +38,7 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
    */
   def apply[T](r: => T) = {
     try {
-      Await.result(Future(r)(DurationLimitSentry.ec), duration)
+      Await.result(Future(r)(executionContext), duration)
     } catch {
       case e: TimeoutException =>
         throw new DurationLimitExceededException(
@@ -49,7 +50,7 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
 }
 
 object DurationLimitSentry {
-  implicit private val ec = ExecutionContext.fromExecutorService(SentriesRegistry.executor)
+  private lazy val ec = ExecutionContext.fromExecutorService(SentriesRegistry.executor)
 }
 
 /**

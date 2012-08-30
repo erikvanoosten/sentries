@@ -11,7 +11,9 @@
 package nl.grons.sentries.core
 
 import org.specs2.specification.Scope
-import nl.grons.sentries.support.NotAvailableException
+import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException}
+import akka.dispatch.{ExecutionContextExecutorService, ExecutorServiceDelegate}
+import java.util.concurrent.ExecutorService
 
 /**
  * Tests [[nl.grons.sentries.core.DurationLimitSentry]].
@@ -37,7 +39,9 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new DurationLimitSentry("testSentry", 50L)
+    val sentry = new DurationLimitSentry("testSentry", 50L) {
+      override val executionContext = new NonLoggingWrappedExecutorService(SentriesRegistry.executor)
+    }
 
     def fastCode = "fast"
 
@@ -53,3 +57,8 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
 }
 
 class ExpectedException extends Exception
+
+class NonLoggingWrappedExecutorService(val executor: ExecutorService) extends
+    ExecutorServiceDelegate with ExecutionContextExecutorService {
+  override def reportFailure(t: Throwable): Unit = {}
+}
