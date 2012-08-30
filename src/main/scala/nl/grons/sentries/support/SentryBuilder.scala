@@ -91,8 +91,8 @@ class ComposingSentryBuilder(
     owner: Class[_], resourceName: String, sentryRegistry: SentriesRegistry, val sentry: Sentry)
   extends SentryBuilder(owner, resourceName, sentryRegistry) with ChainableSentry {
 
-  def withSentry(andThenSentry: ChainableSentry) =
-    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, sentry andThen registered(andThenSentry))
+  def withSentry(composeSentry: ChainableSentry) =
+    new ComposingSentryBuilder(owner, resourceName, sentryRegistry, sentry compose registered(composeSentry))
 
   def apply[T](r: => T) = sentry(r)
 
