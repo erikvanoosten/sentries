@@ -9,7 +9,7 @@ import scala.util.control.Exception.ignoring
 import scala.collection.JavaConverters._
 
 /**
- *
+ * Tests [[nl.grons.sentries.core.MetricsSentry]].
  */
 class MetricsSentryTest extends Specification {
 
@@ -18,19 +18,19 @@ class MetricsSentryTest extends Specification {
       sentry("test")("value") must_== "value"
     }
 
-    "register 'all' and 'success' timer in Metrics" in new SentryContext {
+    "detect success in Metrics timers 'all' and 'success'" in new SentryContext {
       sentry("success")(succeeding)
       registeredTimer("success", "all").map(_.count()) must_== Some(1)
       registeredTimer("success", "success").map(_.count()) must_== Some(1)
     }
 
-    "register 'all' and 'fail' timer in Metrics" in new SentryContext {
+    "detect failure in Metrics timers 'all' and 'fail'" in new SentryContext {
       ignoring(classOf[IllegalArgumentException])(sentry("fail")(failing))
       registeredTimer("fail", "all").map(_.count()) must_== Some(1)
       registeredTimer("fail", "fail").map(_.count()) must_== Some(1)
     }
 
-    "register 'all' and 'not available' timer in Metrics" in new SentryContext {
+    "detect non availability in Metrics timers 'all' and 'not available'" in new SentryContext {
       ignoring(classOf[NotAvailableException])(sentry("notAvailable")(notAvailable))
       registeredTimer("notAvailable", "all").map(_.count()) must_== Some(1)
       registeredTimer("notAvailable", "notAvailable").map(_.count()) must_== Some(1)
@@ -55,7 +55,7 @@ class MetricsSentryTest extends Specification {
     }
 
     def metricName(resourceName: String, timerName: String): MetricName = {
-      new MetricName(classOf[MetricsSentryTest], resourceName + "." + timerName)
+      new MetricName(classOf[MetricsSentryTest], resourceName + ".metrics." + timerName)
     }
   }
 

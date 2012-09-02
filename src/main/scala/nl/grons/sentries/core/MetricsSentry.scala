@@ -47,6 +47,6 @@ class MetricsSentry(val resourceName: String, owner: Class[_]) extends Chainable
 
   def reset() {}
 
-  private def metricFor(metric: String) = Metrics.newTimer(owner, resourceName + "." + metric)
+  private def metricFor(metric: String) = Metrics.newTimer(owner, resourceName + "." + sentryType + "." + metric)
 
 }

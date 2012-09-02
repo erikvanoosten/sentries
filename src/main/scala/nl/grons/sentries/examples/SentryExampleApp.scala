@@ -60,7 +60,6 @@ object SentryExampleApp extends App {
      * This sentry also denies invocations when there are already 10 in progress (concurrency limit).
      */
     private[this] val anotherServiceSentry = sentry("anotherService").
-      withMetrics.
       withFailLimit(failLimit = 4, retryDelayMillis = 1000).
       withConcurrencyLimit(10)
 
@@ -136,7 +135,7 @@ object SentryExampleApp extends App {
        * Puts the resource (in this case a SimpleExampleService) in a pair with its sentry.
        */
       def addSentry(ps: SimpleExampleService): (SimpleExampleService, NamedSentry) =
-        (ps, sentry(ps.name).withConcurrencyLimit(2).withFailLimit(10, 500L))
+        (ps, sentry(ps.name).withSimpleMetrics.withConcurrencyLimit(2).withFailLimit(10, 500L))
     }
 
     /**
@@ -179,7 +178,7 @@ object SentryExampleApp extends App {
       val options = futuresToOptions(futures)
 
       // Assert that there are no None's
-      val misses = options.filter(_.isEmpty).size
+      val misses = options.count(_.isEmpty)
       assert(misses == 0, "Expected no misses, there were " + misses)
 
     } finally {
@@ -195,7 +194,7 @@ object SentryExampleApp extends App {
       val options = futuresToOptions(futures)
 
       // Assert that there are some None's
-      val misses = options.filter(_.isEmpty).size
+      val misses = options.count(_.isEmpty)
       assert(misses > 0, "Expected some misses, there were 0")
 
     } finally {

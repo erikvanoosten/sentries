@@ -45,6 +45,8 @@ class SentryBuilderTest extends Specification {
     "add rate limit sentry" in { todo }
     "add duration limit sentry" in { todo }
     "add metrics sentry" in { todo }
+    "add simple metrics sentry" in { todo }
+    "be multi-thread safe" in { todo }
   }
 
   trait BuilderContext extends Scope with SentrySupport {
