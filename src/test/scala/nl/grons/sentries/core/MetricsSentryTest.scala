@@ -2,7 +2,7 @@ package nl.grons.sentries.core
 
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import nl.grons.sentries.support.NotAvailableException
+import nl.grons.sentries.support.{Sentry, NotAvailableException}
 import com.yammer.metrics.core.{Timer, MetricName}
 import com.yammer.metrics.Metrics
 import scala.util.control.Exception.ignoring
@@ -24,6 +24,12 @@ class MetricsSentryTest extends Specification {
       registeredTimer("success", "success").map(_.count()) must_== Some(1)
     }
 
+    "detect success by jumping out of closure in Metrics timers 'all' and 'success'" in new SentryContext {
+      succeedingByBreakingOutOfClosure(sentry("success_2")) must_== "yes"
+      registeredTimer("success_2", "all").map(_.count()) must_== Some(1)
+      registeredTimer("success_2", "success").map(_.count()) must_== Some(1)
+    }
+
     "detect failure in Metrics timers 'all' and 'fail'" in new SentryContext {
       ignoring(classOf[IllegalArgumentException])(sentry("fail")(failing))
       registeredTimer("fail", "all").map(_.count()) must_== Some(1)
@@ -41,6 +47,12 @@ class MetricsSentryTest extends Specification {
     def sentry(resourceName: String) = new MetricsSentry(resourceName, classOf[MetricsSentryTest])
 
     def succeeding = "fast"
+
+    def succeedingByBreakingOutOfClosure(s: Sentry): String = s {
+      if (1 + 1 == 2) return "yes"
+      if (2 + 2 == 4) return "no"
+      "no"
+    }
 
     def failing: String = {
       throw new IllegalArgumentException("fail")

@@ -14,6 +14,7 @@ import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import com.yammer.metrics.core.Clock
 import com.yammer.metrics.Metrics
 import java.util.concurrent.TimeUnit.NANOSECONDS
+import scala.util.control.ControlThrowable
 
 /**
  * Sentry that collects metric of invocations.
@@ -40,6 +41,7 @@ class MetricsSentry(val resourceName: String, owner: Class[_]) extends Chainable
     all.update(duration, NANOSECONDS)
     result match {
       case Right(v) => success.update(duration, NANOSECONDS); v
+      case Left(e: ControlThrowable) => success.update(duration, NANOSECONDS); throw e
       case Left(e: NotAvailableException) => notAvailable.update(duration, NANOSECONDS); throw e
       case Left(e) => fail.update(duration, NANOSECONDS); throw e
     }

@@ -14,6 +14,7 @@ import com.yammer.metrics.core.{MetricName, HealthCheck, Gauge}
 import com.yammer.metrics.{Metrics, HealthChecks}
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.core.States._
+import scala.util.control.ControlThrowable
 
 /**
  * A sentry that limits the number of consecutive failures; a.k.a. a circuit breaker.
@@ -56,6 +57,10 @@ class CircuitBreakerSentry(
     } catch {
       case e: NotAvailableException =>
         // embedded sentry indicates 'not available', do not update state
+        throw e
+      case e: ControlThrowable =>
+        // Used by Scala for control, it is equivalent to success
+        state.get.postInvoke()
         throw e
       case e: Throwable => {
         state.get.onThrowable(e)
