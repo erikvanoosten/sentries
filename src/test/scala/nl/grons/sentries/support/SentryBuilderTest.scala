@@ -10,6 +10,10 @@ import org.specs2.specification.Scope
 class SentryBuilderTest extends Specification {
 
   "A sentry builder" should {
+    "return value" in new BuilderContext {
+      sentry("test").withSentry(testSentry(1))("value") must_== "value"
+    }
+
     "build a sentry that executes tasks in correct order" in new BuilderContext {
       val s = sentry("test").withSentry(testSentry(1)).withSentry(testSentry(2))
       s(null)

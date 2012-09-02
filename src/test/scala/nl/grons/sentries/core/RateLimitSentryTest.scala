@@ -83,7 +83,7 @@ class RateLimitSentryTest extends Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new RateLimitSentry("testSentry", 3, 40L, classOf[ConcurrencyLimitSentryTest])
+    val sentry = new RateLimitSentry("testSentry", 3, 40L, classOf[RateLimitSentryTest])
 
     def fastCode = "fast"
 
