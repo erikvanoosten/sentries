@@ -22,112 +22,99 @@ class CircuitBreakerSentryTest extends Specification {
   "A CircuitBreaker sentry" should {
     "pass return value in flow state" in new SentryContext {
       for (i <- 1 to 20) {
-        sentry("1")(fastCode) must_== "fast"
+        sentry(fastCode) must_== "fast"
       }
     }
 
     "rethrow exceptions in flow state" in new SentryContext {
-      val s = sentry("2")
       for (i <- 1 to 10) {
-        s.reset() // Needed to stay in flow state.
-        s(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+        sentry.reset() // Needed to stay in flow state.
+        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
       }
     }
 
     "be unavailable in broken state" in new SentryContext {
-      val s = sentry("3")
-      s.trip()
-      s(fastCode) must throwA[CircuitBreakerBrokenException]
-      s.trip()
-      s(throwAnIllegalArgumentException) must throwA[CircuitBreakerBrokenException]
-      s.trip()
-      s(throwANotAvailableException) must throwA[CircuitBreakerBrokenException]
-      s.trip()
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(fastCode) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(throwAnIllegalArgumentException) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(throwANotAvailableException) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
     }
 
     "keep flowing (no exceptions are thrown)" in new SentryContext {
-      val s = sentry("4")
       for (i <- 1 to 20) {
-        s(fastCode) must not(throwA[CircuitBreakerBrokenException])
+        sentry(fastCode) must not(throwA[CircuitBreakerBrokenException])
       }
     }
 
     "keep flowing (control exceptions are thrown)" in new SentryContext {
-      val s = sentry("5")
       for (i <- 1 to 20) {
-        succeedingByBreakingOutOfClosure(s) must_== "yes"
+        succeedingByBreakingOutOfClosure(sentry) must_== "yes"
       }
     }
 
     "keep flowing (some exceptions are thrown)" in new SentryContext {
-      val s = sentry("6")
       for (i <- 1 to 10) {
-        s(fastCode) must not(throwA[CircuitBreakerBrokenException])
-        s(throwAnIllegalArgumentException) must not(throwA[CircuitBreakerBrokenException])
+        sentry(fastCode) must not(throwA[CircuitBreakerBrokenException])
+        sentry(throwAnIllegalArgumentException) must not(throwA[CircuitBreakerBrokenException])
       }
     }
 
     "break after failLimit is reached" in new SentryContext {
-      val s = sentry("7")
-      s(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
-      s(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
-      s(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+      sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+      sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
     }
 
     "recover to flow state upon success after retry timeout" in new SentryContext {
-      val s = sentry("8")
-      s.trip()
+      sentry.trip()
       Thread.sleep(101L)
-      s(fastCode) must_== "fast"
-      s(fastCode) must_== "fast"
+      sentry(fastCode) must_== "fast"
+      sentry(fastCode) must_== "fast"
     }
 
     "stay in broken state upon failure after retry timeout" in new SentryContext {
-      val s = sentry("9")
-      s.trip()
+      sentry.trip()
       Thread.sleep(101L)
       // One attempt to call the code:
-      s(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
     }
 
     "break after trip()" in new SentryContext {
-      val s = sentry("10")
-      s.trip()
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
     }
 
     "stay broken after trip()" in new SentryContext {
-      val s = sentry("11")
-      s(fastCode) must not(throwA[CircuitBreakerBrokenException])
-      s.trip()
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
-      s.trip()
-      s(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry(fastCode) must not(throwA[CircuitBreakerBrokenException])
+      sentry.trip()
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
+      sentry.trip()
+      sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
     }
 
     "recover to flow state after reset()" in new SentryContext {
-      val s = sentry("12")
-      s.trip()
-      s.reset()
-      s(fastCode) must_== "fast"
+      sentry.trip()
+      sentry.reset()
+      sentry(fastCode) must_== "fast"
     }
 
     "stay in flow state after reset()" in new SentryContext {
-      val s = sentry("13")
-      s(fastCode) must_== "fast"
-      s.reset()
-      s(fastCode) must_== "fast"
+      sentry(fastCode) must_== "fast"
+      sentry.reset()
+      sentry(fastCode) must_== "fast"
     }
 
     "not break due to NotAvailableException" in new SentryContext {
-      val s = sentry("14")
       for (i <- 1 to 10) {
-        s(throwANotAvailableException) must not(throwA[CircuitBreakerBrokenException])
+        sentry(throwANotAvailableException) must not(throwA[CircuitBreakerBrokenException])
       }
     }
 
@@ -137,8 +124,7 @@ class CircuitBreakerSentryTest extends Specification {
   }
 
   trait SentryContext extends Scope {
-    def sentry(resourceName: String) =
-      new CircuitBreakerSentry(resourceName, 3, 100L, classOf[CircuitBreakerSentryTest])
+    val sentry = new CircuitBreakerSentry("testSentry", 3, 100L, classOf[CircuitBreakerSentryTest])
 
     def fastCode = "fast"
 
