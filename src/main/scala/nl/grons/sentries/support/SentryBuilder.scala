@@ -20,6 +20,14 @@ import nl.grons.sentries.core._
 abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRegistry: SentriesRegistry) {
 
   /**
+   * Append a metrics sentry to the current sentry.
+   *
+   * @return a new sentry that collects metrics after the current sentry behavior
+   */
+  def withMetrics: ChainableSentry with SentryBuilder =
+    withSentry(new MetricsSentry(resourceName, owner))
+
+  /**
    * Append a circuit breaker sentry to the current sentry.
    *
    * @param failLimit number of failure after which the flow will be broken
