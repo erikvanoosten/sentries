@@ -2,7 +2,7 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.1.2-SNAPSHOT"
+version := "0.2"
 
 scalaVersion := "2.9.2"
 
