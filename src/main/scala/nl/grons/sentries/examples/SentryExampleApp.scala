@@ -44,21 +44,23 @@ object SentryExampleApp extends App {
    */
   class Example1 extends SentrySupport {
     /**
-     * Define a sentry with a fail limit (aka circuit breaker), combined with a concurrency limit.
+     * Define a sentry that collects metrics combined with a fail limit (aka circuit breaker).
      *
      * The sentry will 'break' when 2 consecutive invocations failed.
      * When in broken state, after each 50 ms, 1 attempt will be made to go back to the normal ('flow') state.
      */
     private[this] val simpleServiceSentry = sentry("simpleExampleService").
-      withFailLimit(failLimit = 2, retryDelayMillis = 50)
+      withMetrics.
+      withFailLimit(failLimit = 2, retryDelayMillis = 500)
 
     /**
      * The next circuit breaker works independently from serviceCb.
      * Always use an independent sentry for a resource that fails independently.
      *
-     * This sentry also denies invocations when there are already 10 in progress.
+     * This sentry also denies invocations when there are already 10 in progress (concurrency limit).
      */
     private[this] val anotherServiceSentry = sentry("anotherService").
+      withMetrics.
       withFailLimit(failLimit = 4, retryDelayMillis = 1000).
       withConcurrencyLimit(10)
 
@@ -92,7 +94,7 @@ object SentryExampleApp extends App {
   assertThrows[NotAvailableException] { example1.callService("abc") }
 
   // The circuit breaker will retry after 50 ms. Lets wait for it.
-  Thread.sleep(55L)
+  Thread.sleep(505L)
   // Yes, the sentry is flowing again!
   assert( example1.callService("abcd") == 0 )
 
@@ -206,7 +208,7 @@ object SentryExampleApp extends App {
    */
   def assertThrows[E <: Throwable](c: => Unit)(implicit m: Manifest[E]) {
     val e = allCatch.either(c)
-    assert(e.isLeft && e.left.get.getClass == m.getClass)
+    assert(e.isLeft && m.erasure.isAssignableFrom(e.left.get.getClass))
   }
 
   // Convert normal Future results to a Some, and NotAvailableExceptions to a None:
