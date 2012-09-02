@@ -55,7 +55,7 @@ class ConcurrencyLimitSentryTest extends Specification {
     val sentry = new ConcurrencyLimitSentry("testSentry", 4, classOf[ConcurrencyLimitSentryTest])
 
     def slowCode = {
-      Thread.sleep(50L)
+      Thread.sleep(100L)
       "slow"
     }
 
