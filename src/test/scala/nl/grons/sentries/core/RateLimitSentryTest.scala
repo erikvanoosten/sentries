@@ -20,9 +20,6 @@ import scala.collection.JavaConverters._
  * Tests [[nl.grons.sentries.core.RateLimitSentry]].
  */
 class RateLimitSentryTest extends Specification {
-  // For an unknown reason, parallel execution under sbt fails.
-  sequential
-
   "The rate limit sentry" should {
     "return value" in new SentryContext {
       sentry("value") must_== "value"
@@ -44,7 +41,7 @@ class RateLimitSentryTest extends Specification {
       sentry(fastCode) must_== "fast"
       sentry(fastCode) must_== "fast"
       sentry(notInvokedCode) must throwA[NotAvailableException]
-      Thread.sleep(41L)
+      Thread.sleep(101L)
       sentry(fastCode) must_== "fast"
     }
 
@@ -68,7 +65,7 @@ class RateLimitSentryTest extends Specification {
         val futures = executor.invokeAll(tasks).asScala
         futuresToOptions(futures).filter(_ == Some("fast")).size must_== 3
 
-        Thread.sleep(41L)
+        Thread.sleep(101L)
 
         // Once more:
         val futures2 = executor.invokeAll(tasks).asScala
@@ -78,12 +75,10 @@ class RateLimitSentryTest extends Specification {
         executor.shutdown()
       }
     }
-
-    "this line keeps intellij happy" in { todo }
   }
 
   trait SentryContext extends Scope {
-    val sentry = new RateLimitSentry("testSentry", 3, 40L, classOf[RateLimitSentryTest])
+    val sentry = new RateLimitSentry("testSentry", 3, 100L, classOf[RateLimitSentryTest])
 
     def fastCode = "fast"
 

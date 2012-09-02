@@ -49,8 +49,6 @@ class ConcurrencyLimitSentryTest extends Specification {
       options.filter(_ == Some("slow")).size must_== 4
       options.filter(_ == None).size must_== 6
     }
-
-    "this line keeps intellij happy" in { todo }
   }
 
   trait SentryContext extends Scope {
