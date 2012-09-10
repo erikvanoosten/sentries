@@ -32,7 +32,7 @@ See [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/gro
 
 SBT:
 ```
-libraryDependencies += "nl.grons" % "sentries" %% "0.2"
+libraryDependencies += "nl.grons" %% "sentries" % "0.2"
 ```
 
 Maven:
