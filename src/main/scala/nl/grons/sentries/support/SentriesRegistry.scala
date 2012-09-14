@@ -84,6 +84,16 @@ class SentriesRegistry() {
   }
 
   /**
+   * Remove all sentries from the registry.
+   *
+   * This is can be useful during tests where you want to be sure fresh new sentries are used for each test.
+   */
+  def clear() {
+    val sentryNames = Set() ++ sentries.keySet
+    sentryNames.map(sentryName => removeSentry(sentryName))
+  }
+
+  /**
    * Override to customize how [[com.yammer.metrics.core.MetricName]]s are created.
    *
    * @param sentryOwner the class which owns the sentry
