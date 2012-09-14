@@ -55,7 +55,7 @@ class SentriesRegistry() {
    * @param name name of the sentry
    * @param sentryType sentryType type of sentry
    * @tparam S type of the sentry
-   * @return either the existing sentry or {@code sentry}
+   * @return either the existing sentry or `sentry`
    */
   def getOrAdd[S <: NamedSentry](sentry: S, sentryOwner: Class[_], name: String, sentryType: String): S =
     getOrAdd(createName(sentryOwner, name, sentryType), sentry)
@@ -119,7 +119,7 @@ class SentriesRegistry() {
    * @param name   the sentry's name
    * @param sentry the new sentry
    * @tparam S     the type of the sentry
-   * @return either the existing sentry or {@code sentry}
+   * @return either the existing sentry or `sentry`
    */
   private def getOrAdd[S <: NamedSentry](name: MetricName, sentry: S): S = {
     sentries.putIfAbsent(name, sentry) match {

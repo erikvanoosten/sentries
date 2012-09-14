@@ -60,5 +60,5 @@ class ExpectedException extends Exception
 
 class NonLoggingWrappedExecutorService(val executor: ExecutorService) extends
     ExecutorServiceDelegate with ExecutionContextExecutorService {
-  override def reportFailure(t: Throwable): Unit = {}
+  override def reportFailure(t: Throwable) {}
 }

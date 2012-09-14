@@ -8,7 +8,7 @@
  * There is NO WARRANTY. See the file LICENSE for the full text.
  */
 
-package examples
+package nl.grons.sentries.examples
 
 import scala.util.control.Exception._
 import java.util.concurrent.{Future, ExecutionException, Callable, Executors}
