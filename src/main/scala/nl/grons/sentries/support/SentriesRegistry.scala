@@ -87,10 +87,22 @@ class SentriesRegistry() {
    * Remove all sentries from the registry.
    *
    * This is can be useful during tests where you want to be sure fresh new sentries are used for each test.
+   * The other approach is to call [#resetAllSentries].
    */
   def clear() {
     val sentryNames = Set() ++ sentries.keySet
     sentryNames.map(sentryName => removeSentry(sentryName))
+  }
+
+  /**
+   * Reset all known sentries to their initial state by calling [Sentry#reset] on each sentry.
+   *
+   * This is can be useful during tests where you want to be sure all sentries start in their initial state.
+   * Note: not all sentries support the [Sentry#reset] method. In particular the concurrency limiting sentry does
+   * not support this.
+   */
+  def resetAllSentries() {
+    sentries.foreach(_._2.reset())
   }
 
   /**
