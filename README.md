@@ -32,7 +32,7 @@ See [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/gro
 
 SBT:
 ```
-libraryDependencies += "nl.grons" %% "sentries" % "0.2"
+libraryDependencies += "nl.grons" %% "sentries" % "0.3"
 ```
 
 Maven:
@@ -43,7 +43,7 @@ Maven:
 <dependency>
     <groupId>nl.grons</groupId>
     <artifactId>sentries_${scala.version}</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
 </dependency>
 ```
 
@@ -82,3 +82,12 @@ new nl.grons.sentries.support.JmxReporter().start()
 * Follow effective scala guidelines from Twitter
 * Two space indents, use full imports, do not auto-format
 * API might break between major versions and before 1.0.0 is reached.
+
+## Sentries in tests
+
+As sentries are effectively singletons, you may have problems testing sentries that keep state (such as the circuit
+breaker). To make sure that fresh sentries are created everytime, call the following from a 'before' method:
+
+```scala
+SentrySupport.defaultRegistry.clear()
+```
