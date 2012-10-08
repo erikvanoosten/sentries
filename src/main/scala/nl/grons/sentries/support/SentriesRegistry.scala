@@ -102,7 +102,9 @@ class SentriesRegistry() {
    * not support this.
    */
   def resetAllSentries() {
-    sentries.foreach(_._2.reset())
+    sentries.foreach {
+      case (_, sentry) => sentry.reset()
+    }
   }
 
   /**

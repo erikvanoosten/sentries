@@ -32,7 +32,7 @@ See [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/gro
 
 SBT:
 ```
-libraryDependencies += "nl.grons" %% "sentries" % "0.3"
+libraryDependencies += "nl.grons" %% "sentries" % "0.4"
 ```
 
 Maven:
@@ -43,7 +43,7 @@ Maven:
 <dependency>
     <groupId>nl.grons</groupId>
     <artifactId>sentries_${scala.version}</artifactId>
-    <version>0.3</version>
+    <version>0.4</version>
 </dependency>
 ```
 
@@ -86,8 +86,16 @@ new nl.grons.sentries.support.JmxReporter().start()
 ## Sentries in tests
 
 As sentries are effectively singletons, you may have problems testing sentries that keep state (such as the circuit
-breaker). To make sure that fresh sentries are created everytime, call the following from a 'before' method:
+breaker). To make sure that fresh sentries are created everytime, call the following from a 'before' method. Do make
+sure the `clear()` is called *before* you construct the service under test.
 
 ```scala
 SentrySupport.defaultRegistry.clear()
+```
+
+Another approach is to reset all sentries. Now, order of construction/reset is less of an issue. The disadvantage is
+that resetting is not supported by all sentries. The concurrency limiting sentry and all metrics sentries ignore it.
+
+```scala
+SentrySupport.defaultRegistry.resetAllSentries()
 ```
