@@ -15,7 +15,7 @@ import nl.grons.sentries.core._
 /**
  * Lots of code to make creating sentries trivially easy.
  *
- * For usage instructions see [[nl.grons.sentries.SentrySupport SentrySupport]].
+ * For usage instructions see [[nl.grons.sentries.SentrySupport]].
  */
 abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRegistry: SentriesRegistry) {
 

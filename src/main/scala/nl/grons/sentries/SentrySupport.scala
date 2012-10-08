@@ -22,7 +22,7 @@ import nl.grons.sentries.support.{InitialSentryBuilder, SentriesRegistry, Sentry
  *   }
  * }}}
  *
- * For the available `withXXX` methods use auto completion or see [[nl.grons.sentries.support.SentryBuilder SentryBuilder]].
+ * For the available `withXXX` methods use auto completion or see [[nl.grons.sentries.support.SentryBuilder]].
  */
 trait SentrySupport {
 
