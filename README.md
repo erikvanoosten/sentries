@@ -13,8 +13,9 @@ Example usage:
 ```scala
 class DoItAllService extends nl.grons.sentries.support.SentrySupport {
 
-  val dbSentry = sentry("mysql:localhost:3366") withMetrics withFailLimit(failLimit = 5, retryDelayMillis = 500)
-  val twitterApiSentry = sentry("twitter") withMetrics withFailLimit(failLimit = 5, retryDelayMillis = 500) withConcurrencyLimit(3)
+  // withFailLimit == circuit breaker
+  val dbSentry = sentry("mysql:localhost:3366") withMetrics withFailLimit(failLimit = 5, retryDelay = 500 milliseconds)
+  val twitterApiSentry = sentry("twitter") withMetrics withFailLimit(failLimit = 5, retryDelay = 500 milliseconds) withConcurrencyLimit(3)
 
   def loadTweetFromDb(id: Long): Tweet = dbSentry {
     database.load(id)
@@ -32,22 +33,25 @@ See [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/gro
 
 SBT:
 ```
-libraryDependencies += "nl.grons" %% "sentries" % "0.4"
+libraryDependencies += "nl.grons" %% "sentries" % "0.5"
 ```
 
 Maven:
 ```
 <properties>
-    <scala.version>2.9.2</scala.version>
+    <scala.version>2.10.0</scala.version>
+    <scala.dep.version>2.10</scala.dep.version>
 </properties>
 <dependency>
     <groupId>nl.grons</groupId>
-    <artifactId>sentries_${scala.version}</artifactId>
-    <version>0.4</version>
+    <artifactId>sentries_${scala.dep.version}</artifactId>
+    <version>0.5</version>
 </dependency>
 ```
 
-Sentries is build for scala 2.9.1, 2.9.1-1 and 2.9.2. It will be build for 2.10 as it becomes available.
+Note: For scala versions before 2.10, you need to use the full scala version; e.g. `metrics-scala_2.9.1-1`.
+
+Sentries is build for scala 2.9.1, 2.9.1-1, 2.9.2 and 2.10. Akka is not needed for the 2.10 build.
 
 ## Usage guidelines
 
@@ -63,7 +67,7 @@ Sentries is build for scala 2.9.1, 2.9.1-1 and 2.9.2. It will be build for 2.10 
 * Building a sentry chain is easiest by mixing in `SentrySupport` and use method `sentry` as in the example above.
 * It is permitted to use the same sentry in multiple sentry chains.
 * The sentry that limits durations should NOT be used from a `Future` or from an `Actor`. Futures and actors have
-  other mechanisms to deal with timeouts that are more suited.
+  other mechanisms to deal with timeouts that are more suited. (This will be resolved in a later version.)
 
 * JMX control is started with the following:
 ```scala
@@ -78,7 +82,7 @@ new nl.grons.sentries.support.JmxReporter().start()
 * Code to make the library friendly to use is not part of the core.
 * Readability of code triumphs all other considerations.
 * If it doesn't perform, make it optional (this basically means that almost every feature is optional).
-* Dependencies are avoided. Right now its: JVM 6, Scala 2.9 and Akka 2.0.3 (later: Scala 2.10), Metrics-core 2.1.2.
+* Dependencies are avoided. Right now its: JVM 6+, Scala 2.9 and Akka 2.0.5 or Scala 2.10, Metrics-core 2.1.5.
 * Follow effective scala guidelines from Twitter
 * Two space indents, use full imports, do not auto-format
 * API might break between major versions and before 1.0.0 is reached.
@@ -106,4 +110,3 @@ To run tests concurrently you will need to override the sentries registry for ea
     override def sentryRegistry = new SentriesRegistry
   }
 ```
-

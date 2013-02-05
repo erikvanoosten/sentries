@@ -1,13 +1,31 @@
+//
+// Sentries
+// Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
+//
+// The primary distribution site is https://github.com/erikvanoosten/sentries
+//
+// This software is released under the terms of the BSD 2-Clause License.
+// There is NO WARRANTY. See the file LICENSE for the full text.
+//
+
 name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.5-SNAPSHOT"
+version := "0.6-SNAPSHOT"
 
-scalaVersion := "2.9.2"
+scalaVersion := "2.10.0"
 
-crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2")
-// crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2", "2.10.0-M7")
+crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2", "2.10.0")
+
+crossVersion := CrossVersion.binary
+
+// The following prepends src/main/scala_2.9 or src/main/scala_2.10 to the compile path.
+unmanagedSourceDirectories in Compile <<= (unmanagedSourceDirectories in Compile, sourceDirectory in Compile, scalaVersion) { (sds: Seq[java.io.File], sd: java.io.File, v: String) =>
+  val mainVersion = v.split("""\.""").take(2).mkString(".")
+  val extra = new java.io.File(sd, "scala_" + mainVersion)
+  (if (extra.exists) Seq(extra) else Seq()) ++ sds
+}
 
 resolvers ++= Seq(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
@@ -15,11 +33,11 @@ resolvers ++= Seq(
 )
 
 libraryDependencies <++= (scalaVersion) { v: String =>
-  if (v.startsWith("2.10"))     Seq("com.yammer.metrics" % "metrics-core" % "2.1.2",
-                                    "org.specs2" %% "specs2" % "1.12.1" % "test")
-  else if (v.startsWith("2.9")) Seq("com.yammer.metrics" % "metrics-core" % "2.1.2",
-                                    "com.typesafe.akka" % "akka-actor" % "2.0.3",
-                                    "org.specs2" %% "specs2" % "1.12.1" % "test")
+  if (v.startsWith("2.10"))     Seq("com.yammer.metrics" % "metrics-core" % "2.1.5",
+                                    "org.specs2" %% "specs2" % "1.13" % "test")
+  else if (v.startsWith("2.9")) Seq("com.yammer.metrics" % "metrics-core" % "2.1.5",
+                                    "com.typesafe.akka" % "akka-actor" % "2.0.5",
+                                    "org.specs2" %% "specs2" % "1.12.3" % "test")
   else Seq()
 }
 

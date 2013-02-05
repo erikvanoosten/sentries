@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -11,6 +11,7 @@
 package nl.grons.sentries.support
 
 import nl.grons.sentries.core._
+import nl.grons.sentries.cross.Concurrent._
 
 /**
  * Lots of code to make creating sentries trivially easy.
@@ -48,11 +49,11 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * Append a circuit breaker sentry to the current sentry.
    *
    * @param failLimit number of failure after which the flow will be broken
-   * @param retryDelayMillis timeout for trying again
+   * @param retryDelay timeout for trying again
    * @return a new sentry that applies a circuit breaker after the current sentry behavior
    */
-  def withFailLimit(failLimit: Int, retryDelayMillis: Long): ChainableSentry with SentryBuilder =
-    withSentry(new CircuitBreakerSentry(resourceName, failLimit, retryDelayMillis, owner))
+  def withFailLimit(failLimit: Int, retryDelay: Duration): ChainableSentry with SentryBuilder =
+    withSentry(new CircuitBreakerSentry(resourceName, failLimit, retryDelay, owner))
 
   /**
    * Append a concurrency limit sentry to the current sentry.
@@ -82,11 +83,11 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * Reason: this sentry blocks the current thread while waiting on a future that executes the task. Blocking the
    * current thread is an anti-pattern for futures and actors.
    *
-   * @param durationLimitMillis the maximum duration of a call in millis
+   * @param durationLimit the maximum duration of a call
    * @return a new sentry that applies a duration limit after the current sentry behavior
    */
-  def withDurationLimit(durationLimitMillis: Long): ChainableSentry with SentryBuilder =
-    withSentry(new DurationLimitSentry(resourceName, durationLimitMillis))
+  def withDurationLimit(durationLimit: Duration): ChainableSentry with SentryBuilder =
+    withSentry(new DurationLimitSentry(resourceName, durationLimit))
 
   /**
    * Append a custom sentry to the current sentry.

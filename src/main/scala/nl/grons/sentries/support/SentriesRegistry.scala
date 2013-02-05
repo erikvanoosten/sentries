@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -11,9 +11,9 @@
 package nl.grons.sentries.support
 
 import com.yammer.metrics.core.{Stoppable, MetricName}
-import java.util.concurrent.{Executors, ConcurrentHashMap, CopyOnWriteArrayList}
+import java.util.concurrent.{Executors, CopyOnWriteArrayList}
 import scala.collection.JavaConverters._
-import scala.collection.mutable
+import nl.grons.sentries.cross.Concurrent._
 
 /**
  * A registry of sentry instances.
@@ -21,7 +21,7 @@ import scala.collection.mutable
 class SentriesRegistry() {
 
   private[this] val listeners = new CopyOnWriteArrayList[SentriesRegistryListener]().asScala
-  private[this] val sentries = newSentriesMap()
+  private[this] val sentries: CMap[MetricName, NamedSentry] = newSentriesMap()
 
   /**
    * Adds a [[nl.grons.sentries.support.SentriesRegistryListener]] to a collection of listeners that will
@@ -88,7 +88,7 @@ class SentriesRegistry() {
    *
    * See README.md section 'Sentries in tests' for alternatives during testing.
    */
-  @deprecated(message = "will be removed in sentries 0.6")
+  @deprecated(message = "will be removed in sentries 0.6", since = "0.5")
   def clear() {
     val sentryNames = Set() ++ sentries.keySet
     sentryNames.map(sentryName => removeSentry(sentryName))
@@ -122,8 +122,8 @@ class SentriesRegistry() {
    *
    * @return a new [[scala.collection.mutable.ConcurrentMap]]
    */
-  protected def newSentriesMap(): mutable.ConcurrentMap[MetricName, NamedSentry] =
-    new ConcurrentHashMap[MetricName, NamedSentry](1024).asScala
+  protected def newSentriesMap(): CMap[MetricName, NamedSentry] =
+    new java.util.concurrent.ConcurrentHashMap[MetricName, NamedSentry](1024).asScala
 
   /**
    * Gets any existing sentry with the given name or, if none exists, adds the given sentry.

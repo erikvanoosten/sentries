@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -96,7 +96,6 @@ class RateLimitSentryTest extends Specification {
       try Some(future.get())
       catch {
         case e: ExecutionException if e.getCause.isInstanceOf[NotAvailableException] => None
-        case e => throw e
       }
     }
   }

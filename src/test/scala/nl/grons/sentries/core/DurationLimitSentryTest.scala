@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -12,8 +12,8 @@ package nl.grons.sentries.core
 
 import org.specs2.specification.Scope
 import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException}
-import akka.dispatch.{ExecutionContextExecutorService, ExecutorServiceDelegate}
-import java.util.concurrent.ExecutorService
+import nl.grons.sentries.cross.Concurrent._
+import java.util.concurrent.TimeUnit
 
 /**
  * Tests [[nl.grons.sentries.core.DurationLimitSentry]].
@@ -39,8 +39,8 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new DurationLimitSentry("testSentry", 200L) {
-      override val executionContext = new NonLoggingWrappedExecutorService(SentriesRegistry.executor)
+    val sentry = new DurationLimitSentry("testSentry", Duration(200L, TimeUnit.MILLISECONDS)) {
+      override val executionContext = nonLoggingExecutionContext(SentriesRegistry.executor)
     }
 
     def fastCode = "fast"
@@ -57,8 +57,3 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
 }
 
 class ExpectedException extends Exception
-
-class NonLoggingWrappedExecutorService(val executor: ExecutorService) extends
-    ExecutorServiceDelegate with ExecutionContextExecutorService {
-  override def reportFailure(t: Throwable) {}
-}

@@ -1,12 +1,13 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
  * This software is released under the terms of the BSD 2-Clause License.
  * There is NO WARRANTY. See the file LICENSE for the full text.
  */
+
 package nl.grons.sentries.core
 
 import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
@@ -14,6 +15,7 @@ import com.yammer.metrics.core.{MetricName, HealthCheck, Gauge}
 import com.yammer.metrics.{Metrics, HealthChecks}
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.core.States._
+import nl.grons.sentries.cross.Concurrent.Duration
 import scala.util.control.ControlThrowable
 
 /**
@@ -23,7 +25,7 @@ import scala.util.control.ControlThrowable
 class CircuitBreakerSentry(
   val resourceName: String,
   val failLimit: Int,
-  val retryDelayMillis: Long,
+  val retryDelay: Duration,
   owner: Class[_]
 ) extends ChainableSentry {
 
@@ -130,7 +132,7 @@ private object States {
    * CircuitBreaker is broken. Invocations fail immediately.
    */
   class BrokenState(cb: CircuitBreakerSentry) extends State(cb) {
-    private[this] val retryAt: Long = System.currentTimeMillis() + cb.retryDelayMillis
+    private[this] val retryAt: Long = System.currentTimeMillis() + cb.retryDelay.toMillis
 
     def preInvoke() {
       val retry = System.currentTimeMillis > retryAt

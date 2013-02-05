@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -11,12 +11,13 @@
 package nl.grons.sentries.examples
 
 import scala.util.control.Exception._
-import java.util.concurrent.{Future, ExecutionException, Callable, Executors}
+import java.util.concurrent.{Future, ExecutionException, Callable, Executors, TimeUnit}
 import scala.collection.JavaConverters._
 import nl.grons.sentries.SentrySupport
 import nl.grons.sentries.support._
 import scala.util.Random
 import nl.grons.sentries.core.LoadBalancer
+import nl.grons.sentries.cross.Concurrent.Duration
 
 /**
  * Some runnable examples to show how to use sentries.
@@ -51,7 +52,7 @@ object SentryExampleApp extends App {
      */
     private[this] val simpleServiceSentry = sentry("simpleExampleService").
       withMetrics.
-      withFailLimit(failLimit = 2, retryDelayMillis = 500)
+      withFailLimit(failLimit = 2, retryDelay = Duration(500, TimeUnit.MILLISECONDS))
 
     /**
      * The next circuit breaker works independently from serviceCb.
@@ -60,7 +61,7 @@ object SentryExampleApp extends App {
      * This sentry also denies invocations when there are already 10 in progress (concurrency limit).
      */
     private[this] val anotherServiceSentry = sentry("anotherService").
-      withFailLimit(failLimit = 4, retryDelayMillis = 1000).
+      withFailLimit(failLimit = 4, retryDelay = Duration(1000, TimeUnit.MILLISECONDS)).
       withConcurrencyLimit(10)
 
     /**
@@ -135,7 +136,7 @@ object SentryExampleApp extends App {
        * Puts the resource (in this case a SimpleExampleService) in a pair with its sentry.
        */
       def addSentry(ps: SimpleExampleService): (SimpleExampleService, NamedSentry) =
-        (ps, sentry(ps.name).withSimpleMetrics.withConcurrencyLimit(2).withFailLimit(10, 500L))
+        (ps, sentry(ps.name).withSimpleMetrics.withConcurrencyLimit(2).withFailLimit(10, Duration(500, TimeUnit.MILLISECONDS)))
     }
 
     /**
@@ -215,7 +216,6 @@ object SentryExampleApp extends App {
     try Some(future.get())
     catch {
       case e: ExecutionException if e.getCause.isInstanceOf[NotAvailableException] => None
-      case e => throw e
     }
   }
 

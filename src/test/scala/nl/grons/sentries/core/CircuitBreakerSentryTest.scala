@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -10,9 +10,11 @@
 
 package nl.grons.sentries.core
 
+import java.util.concurrent.TimeUnit
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
 import nl.grons.sentries.support.{Sentry, NotAvailableException}
+import nl.grons.sentries.cross.Concurrent.Duration
 
 /**
  * Tests [[nl.grons.sentries.core.CircuitBreakerSentry]].
@@ -73,14 +75,14 @@ class CircuitBreakerSentryTest extends Specification {
 
     "recover to flow state upon success after retry timeout" in new SentryContext {
       sentry.trip()
-      Thread.sleep(101L)
+      Thread.sleep(retryDelayTime + 1L)
       sentry(fastCode) must_== "fast"
       sentry(fastCode) must_== "fast"
     }
 
     "stay in broken state upon failure after retry timeout" in new SentryContext {
       sentry.trip()
-      Thread.sleep(101L)
+      Thread.sleep(retryDelayTime + 1L)
       // One attempt to call the code:
       sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
       sentry(notInvokedCode) must throwA[CircuitBreakerBrokenException]
@@ -124,7 +126,8 @@ class CircuitBreakerSentryTest extends Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new CircuitBreakerSentry("testSentry", 3, 100L, classOf[CircuitBreakerSentryTest])
+    val retryDelayTime: Long = 300L
+    val sentry = new CircuitBreakerSentry("testSentry", 3, Duration(retryDelayTime, TimeUnit.MILLISECONDS), classOf[CircuitBreakerSentryTest])
 
     def fastCode = "fast"
 

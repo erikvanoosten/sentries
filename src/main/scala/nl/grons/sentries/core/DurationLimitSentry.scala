@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -10,8 +10,7 @@
 
 package nl.grons.sentries.core
 
-import akka.dispatch.{ExecutionContext, Await, Future}
-import akka.util.duration._
+import nl.grons.sentries.cross.Concurrent._
 import java.util.concurrent.TimeoutException
 import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException, ChainableSentry}
 
@@ -25,10 +24,9 @@ import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException, Chain
  * Reason: this sentry blocks the current thread while waiting on a future that executes the task. Blocking the
  * current thread is an anti-pattern for futures and actors.
  */
-class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) extends ChainableSentry {
+class DurationLimitSentry(val resourceName: String, durationLimit: Duration) extends ChainableSentry {
   val sentryType = "durationLimit"
 
-  private[this] val duration = durationLimitMillis.milliseconds
   val executionContext = DurationLimitSentry.ec
 
   /**
@@ -38,11 +36,11 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
    */
   def apply[T](r: => T) = {
     try {
-      Await.result(Future(r)(executionContext), duration)
+      Await.result(Future(r)(executionContext), durationLimit)
     } catch {
       case e: TimeoutException =>
         throw new DurationLimitExceededException(
-          resourceName, "Timeout of %s exceeded for resource %s".format(duration, resourceName), e)
+          resourceName, "Timeout of %s exceeded for resource %s".format(durationLimit, resourceName), e)
     }
   }
 
@@ -50,7 +48,7 @@ class DurationLimitSentry(val resourceName: String, durationLimitMillis: Long) e
 }
 
 object DurationLimitSentry {
-  private lazy val ec = ExecutionContext.fromExecutorService(SentriesRegistry.executor)
+  private lazy val ec: ExecutionContext = ExecutionContext.fromExecutorService(SentriesRegistry.executor)
 }
 
 /**

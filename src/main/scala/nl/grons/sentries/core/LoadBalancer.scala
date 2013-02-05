@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -45,7 +45,6 @@ abstract class LoadBalancer[R](loadBalancerName: String, val reporter: (String, 
         case e: NotAvailableException if attemptsLeft > 1 =>
           reporter(sentry.resourceName, e)
           None
-        case e => throw e
       }
       t match {
         case Some(x) => x

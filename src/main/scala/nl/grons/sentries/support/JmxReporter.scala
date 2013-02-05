@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
@@ -13,12 +13,12 @@ package nl.grons.sentries.support
 import com.yammer.metrics.core.MetricName
 import javax.management.{MBeanRegistrationException, InstanceNotFoundException, ObjectName, MBeanServer}
 import java.lang.management.ManagementFactory
-import scala.collection.mutable
 import scala.collection.JavaConverters._
 import java.util.concurrent.ConcurrentHashMap
 import org.slf4j.LoggerFactory
 import nl.grons.sentries
 import nl.grons.sentries.SentrySupport
+import nl.grons.sentries.cross.Concurrent._
 
 /**
  * A reporter which exposes sentries as JMX MBeans.
@@ -29,7 +29,7 @@ class JmxReporter(
 ) extends SentriesRegistryListener {
 
   private[this] var listening = false
-  private[this] val registeredBeans = newRegisteredBeansMap()
+  private[this] val registeredBeans: CMap[MetricName, ObjectName] = newRegisteredBeansMap()
   private[this] val logger = LoggerFactory.getLogger(getClass)
 
 
@@ -65,7 +65,7 @@ class JmxReporter(
    *
    * @return a new [[scala.collection.mutable.ConcurrentMap]]
    */
-  protected def newRegisteredBeansMap(): mutable.ConcurrentMap[MetricName, ObjectName] =
+  protected def newRegisteredBeansMap(): CMap[MetricName, ObjectName] =
     new ConcurrentHashMap[MetricName, ObjectName](1024).asScala
 
   def shutdown() {
