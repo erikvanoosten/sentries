@@ -122,8 +122,7 @@ class SentriesRegistry() {
    *
    * @return a new [[scala.collection.mutable.ConcurrentMap]]
    */
-  protected def newSentriesMap(): CMap[MetricName, NamedSentry] =
-    new java.util.concurrent.ConcurrentHashMap[MetricName, NamedSentry](1024).asScala
+  protected def newSentriesMap(): CMap[MetricName, NamedSentry] = defaultConcurrentMap()
 
   /**
    * Gets any existing sentry with the given name or, if none exists, adds the given sentry.

@@ -117,10 +117,10 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * Append a rate limit sentry to the current sentry.
    *
    * @param rate number of invocations per time unit
-   * @param per the time unit in millis
+   * @param per the time unit
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
-  def withRateLimit(rate: Int, per: Long): ChainableSentry with SentryBuilder =
+  def withRateLimit(rate: Int, per: Duration): ChainableSentry with SentryBuilder =
     withSentry(new RateLimitSentry(owner, resourceName, rate, per))
 
   /**

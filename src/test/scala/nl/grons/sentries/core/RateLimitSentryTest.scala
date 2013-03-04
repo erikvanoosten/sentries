@@ -10,10 +10,11 @@
 
 package nl.grons.sentries.core
 
-import org.specs2.mutable.Specification
-import nl.grons.sentries.support.NotAvailableException
-import org.specs2.specification.Scope
 import java.util.concurrent._
+import nl.grons.sentries.cross.Concurrent.Duration
+import nl.grons.sentries.support.NotAvailableException
+import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
 import scala.collection.JavaConverters._
 
 /**
@@ -86,7 +87,7 @@ class RateLimitSentryTest extends Specification {
 
   private trait SentryContext extends Scope {
     val delay: Long = 300L
-    val sentry = new RateLimitSentry(classOf[RateLimitSentryTest], "testSentry", 3, delay)
+    val sentry = new RateLimitSentry(classOf[RateLimitSentryTest], "testSentry", 3, Duration(delay, TimeUnit.MILLISECONDS))
 
     def fastCode = "fast"
 

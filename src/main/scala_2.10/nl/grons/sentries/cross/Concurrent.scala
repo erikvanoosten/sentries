@@ -14,7 +14,7 @@ import java.util.concurrent.Executor
 
 /**
  * Defines type aliases and helpers for abstracting differences between scala versions.
- * This version if for Scala 2.10.x and uses the scala library for concurrency.
+ * This version is for Scala 2.10.x and uses the scala library for concurrency.
  */
 object Concurrent {
   type ExecutionContext = scala.concurrent.ExecutionContext
@@ -25,6 +25,8 @@ object Concurrent {
   type Duration = scala.concurrent.duration.Duration
   val Duration = scala.concurrent.duration.Duration
   type CMap[A, B] = scala.collection.concurrent.Map[A, B]
+
+  def defaultConcurrentMap[A,B](): CMap[A,B] = scala.collection.concurrent.TrieMap.empty
 
   def nonLoggingExecutionContext(executor: Executor): scala.concurrent.ExecutionContext =
     scala.concurrent.ExecutionContext.fromExecutor(executor, reporter = (_: Throwable) => ())

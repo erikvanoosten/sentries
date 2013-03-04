@@ -12,13 +12,11 @@ package nl.grons.sentries.support
 
 import com.yammer.metrics.core.MetricName
 import java.lang.management.ManagementFactory
-import java.util.concurrent.ConcurrentHashMap
 import javax.management.{MBeanRegistrationException, InstanceNotFoundException, ObjectName, MBeanServer}
 import nl.grons.sentries
-import nl.grons.sentries.cross.Concurrent._
 import nl.grons.sentries.SentrySupport
+import nl.grons.sentries.cross.Concurrent._
 import org.slf4j.LoggerFactory
-import scala.collection.JavaConverters._
 
 /**
  * A reporter which exposes sentries as JMX MBeans.
@@ -66,8 +64,7 @@ class JmxReporter(
    *
    * @return a new ConcurrentMap
    */
-  protected def newRegisteredBeansMap(): CMap[MetricName, ObjectName] =
-    new ConcurrentHashMap[MetricName, ObjectName](1024).asScala
+  protected def newRegisteredBeansMap(): CMap[MetricName, ObjectName] = defaultConcurrentMap()
 
   def shutdown() {
     sentryRegistry.removeListener(this)

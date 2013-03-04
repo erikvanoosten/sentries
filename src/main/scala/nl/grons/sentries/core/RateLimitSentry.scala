@@ -12,6 +12,7 @@ package nl.grons.sentries.core
 
 import com.yammer.metrics.Metrics
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
+import nl.grons.sentries.cross.Concurrent.Duration
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
 
@@ -27,9 +28,10 @@ class RateLimitSentry(
   owner: Class[_],
   val resourceName: String,
   rate: Int,
-  timeSpanMillis: Long
+  timeSpan: Duration
 ) extends ChainableSentry {
 
+  private[this] val timeSpanMillis = timeSpan.toMillis
   private[this] val tokens = new AtomicInteger(rate)
   private[this] val nextTokenReleaseMillis = new AtomicLong(0L)
 
@@ -45,7 +47,7 @@ class RateLimitSentry(
    */
   def apply[T](r: => T) = {
     if (!acquireToken()) throw new RateLimitExceededException(
-      resourceName, "Exceeded rate limit of " + rate + "/" + timeSpanMillis + "ms for " + resourceName)
+      resourceName, "Exceeded rate limit of " + rate + "/" + timeSpan + " for " + resourceName)
     r
   }
 

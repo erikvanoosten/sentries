@@ -11,10 +11,11 @@
 package nl.grons.sentries.cross
 
 import java.util.concurrent.ExecutorService
+import scala.collection.JavaConverters._
 
 /**
  * Defines type aliases and helpers for abstracting differences between scala versions.
- * This version if for Scala 2.9.x and uses the Akka library for concurrency.
+ * This version is for Scala 2.9.x and uses the Akka library for concurrency.
  */
 object Concurrent {
   type ExecutionContext = akka.dispatch.ExecutionContext
@@ -25,6 +26,8 @@ object Concurrent {
   type Duration = akka.util.Duration
   val Duration = akka.util.Duration
   type CMap[A, B] = scala.collection.mutable.ConcurrentMap[A, B]
+
+  def defaultConcurrentMap[A,B](): CMap[A,B] = new java.util.concurrent.ConcurrentHashMap[A, B](1024).asScala
 
   def nonLoggingExecutionContext(executor: ExecutorService): akka.dispatch.ExecutionContextExecutorService =
     new NonLoggingWrappedExecutorService(executor)
