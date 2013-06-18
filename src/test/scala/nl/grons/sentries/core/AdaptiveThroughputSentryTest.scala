@@ -37,8 +37,11 @@ class AdaptiveThroughputSentryTest extends Specification {
     "be unavailable when throughput is 0" in new SentryContext {
       sentry.trip()
       sentry(fastCode) must throwA[ReducedThroughputException]
+      sentry.trip()
       sentry(throwAnIllegalArgumentException) must throwA[ReducedThroughputException]
+      sentry.trip()
       sentry(throwANotAvailableException) must throwA[ReducedThroughputException]
+      sentry.trip()
       sentry(notInvokedCode) must throwA[ReducedThroughputException]
     }
 
@@ -128,7 +131,7 @@ class AdaptiveThroughputSentryTest extends Specification {
     "report status as Metrics gauge" in { todo }
   }
 
-  trait SentryContext extends Scope {
+  private trait SentryContext extends Scope {
     val evaluationDelay: Long = 500L
     val sentry = new AdaptiveThroughputSentry(
       "testSentry",

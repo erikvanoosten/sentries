@@ -51,7 +51,7 @@ class ConcurrencyLimitSentryTest extends Specification {
     }
   }
 
-  trait SentryContext extends Scope {
+  private trait SentryContext extends Scope {
     val sentry = new ConcurrencyLimitSentry("testSentry", 4, classOf[ConcurrencyLimitSentryTest])
 
     def slowCode = {

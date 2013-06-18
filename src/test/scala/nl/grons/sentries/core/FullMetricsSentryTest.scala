@@ -53,7 +53,7 @@ class FullMetricsSentryTest extends Specification {
     }
   }
 
-  trait SentryContext extends Scope {
+  private trait SentryContext extends Scope {
     def sentry(resourceName: String) = new FullMetricsSentry(resourceName, classOf[FullMetricsSentryTest])
 
     def succeeding = "fast"

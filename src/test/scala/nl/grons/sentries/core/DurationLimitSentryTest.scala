@@ -38,7 +38,7 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
     }
   }
 
-  trait SentryContext extends Scope {
+  private trait SentryContext extends Scope {
     val sentry = new DurationLimitSentry("testSentry", Duration(200L, TimeUnit.MILLISECONDS)) {
       override val executionContext = nonLoggingExecutionContext(SentriesRegistry.executor)
     }

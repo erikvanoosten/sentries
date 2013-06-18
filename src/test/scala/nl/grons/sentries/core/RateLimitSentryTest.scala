@@ -84,7 +84,7 @@ class RateLimitSentryTest extends Specification {
     }
   }
 
-  trait SentryContext extends Scope {
+  private trait SentryContext extends Scope {
     val delay: Long = 300L
     val sentry = new RateLimitSentry("testSentry", 3, delay, classOf[RateLimitSentryTest])
 

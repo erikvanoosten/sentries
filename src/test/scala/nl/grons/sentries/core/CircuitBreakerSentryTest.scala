@@ -125,7 +125,7 @@ class CircuitBreakerSentryTest extends Specification {
     "report status as Metrics gauge" in { todo }
   }
 
-  trait SentryContext extends Scope {
+  private trait SentryContext extends Scope {
     val retryDelayTime: Long = 300L
     val sentry = new CircuitBreakerSentry("testSentry", 3, Duration(retryDelayTime, TimeUnit.MILLISECONDS), classOf[CircuitBreakerSentryTest])
 
