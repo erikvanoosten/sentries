@@ -23,11 +23,8 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
   /**
    * Append a metrics sentry to the current sentry.
    *
-   * Four timers are registered: "all", "success", "fail" and "notAvailable". These are update for respectively
-   * each invocation, succeeding invocations, invocations that throw an exception, and invocations that are blocked
-   * by a sentry that is later in the chain (detected by catching [[nl.grons.sentries.support.NotAvailableException]]s).
-   *
-   * When 4 timers is too much detail, use [[.withSimpleMetrics]] instead.
+   * One timer is registered: "all". It is update for each invocation.
+   * For more extensive measuring, use [[.withFullMetrics]] instead.
    *
    * @return a new sentry that collects metrics after the current sentry behavior
    */
@@ -35,15 +32,18 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
     withSentry(new MetricsSentry(resourceName, owner))
 
   /**
-   * Append a metrics sentry to the current sentry.
+   * Append an extensive metrics sentry to the current sentry.
    *
-   * One timer is registered: "all". It is update for each invocation. For more information, use [[.withMetrics]]
-   * instead.
+   * Four timers are registered: "all", "success", "fail" and "notAvailable". These are update for respectively
+   * each invocation, succeeding invocations, invocations that throw an exception, and invocations that are blocked
+   * by a sentry that is later in the chain (detected by catching [[nl.grons.sentries.support.NotAvailableException]]s).
+   *
+   * When 4 timers is too much detail, use [[.withMetrics]] instead.
    *
    * @return a new sentry that collects metrics after the current sentry behavior
    */
-  def withSimpleMetrics: ChainableSentry with SentryBuilder =
-    withSentry(new SimpleMetricsSentry(resourceName, owner))
+  def withFullMetrics: ChainableSentry with SentryBuilder =
+    withSentry(new FullMetricsSentry(resourceName, owner))
 
   /**
    * Append a circuit breaker sentry to the current sentry.

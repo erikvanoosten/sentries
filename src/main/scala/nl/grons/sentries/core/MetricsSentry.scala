@@ -10,11 +10,10 @@
 
 package nl.grons.sentries.core
 
-import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
+import nl.grons.sentries.support.ChainableSentry
 import com.yammer.metrics.core.Clock
 import com.yammer.metrics.Metrics
 import java.util.concurrent.TimeUnit.NANOSECONDS
-import scala.util.control.ControlThrowable
 
 /**
  * Sentry that collects metric of invocations.
@@ -25,30 +24,16 @@ class MetricsSentry(val resourceName: String, owner: Class[_]) extends Chainable
   val sentryType = "metrics"
 
   private[this] val clock = Clock.defaultClock()
-  private[this] val all = metricFor("all")
-  private[this] val success = metricFor("success")
-  private[this] val notAvailable = metricFor("notAvailable")
-  private[this] val fail = metricFor("fail")
+  private[this] val timer = Metrics.newTimer(owner, resourceName + "." + sentryType + ".all")
 
   /**
    * Run the given code block in the context of this sentry, and return its value.
    */
   def apply[T](r: => T) = {
     val start = clock.tick()
-    val result = try Right(r) catch { case e: Throwable => Left(e) }
-    val duration = clock.tick() - start
-
-    all.update(duration, NANOSECONDS)
-    result match {
-      case Right(v) => success.update(duration, NANOSECONDS); v
-      case Left(e: ControlThrowable) => success.update(duration, NANOSECONDS); throw e
-      case Left(e: NotAvailableException) => notAvailable.update(duration, NANOSECONDS); throw e
-      case Left(e) => fail.update(duration, NANOSECONDS); throw e
-    }
+    try r finally timer.update(clock.tick() - start, NANOSECONDS)
   }
 
   def reset() {}
-
-  private def metricFor(metric: String) = Metrics.newTimer(owner, resourceName + "." + sentryType + "." + metric)
 
 }

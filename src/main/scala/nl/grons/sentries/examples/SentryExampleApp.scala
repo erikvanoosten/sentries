@@ -136,7 +136,7 @@ object SentryExampleApp extends App {
        * Puts the resource (in this case a SimpleExampleService) in a pair with its sentry.
        */
       def addSentry(ps: SimpleExampleService): (SimpleExampleService, NamedSentry) =
-        (ps, sentry(ps.name).withSimpleMetrics.withConcurrencyLimit(2).withFailLimit(10, Duration(500, TimeUnit.MILLISECONDS)))
+        (ps, sentry(ps.name).withMetrics.withConcurrencyLimit(2).withFailLimit(10, Duration(500, TimeUnit.MILLISECONDS)))
     }
 
     /**
