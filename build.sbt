@@ -12,7 +12,7 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.6"
+version := "0.7-SNAPSHOT"
 
 scalaVersion := "2.10.0"
 
@@ -33,15 +33,13 @@ resolvers ++= Seq(
 )
 
 libraryDependencies <++= (scalaVersion) { v: String =>
-  Seq(
-    "com.yammer.metrics" % "metrics-core" % "2.2.0",
-    "org.slf4j" % "slf4j-api" % "1.7.5") ++
-  if (v.startsWith("2.10"))     Seq("org.specs2" %% "specs2" % "1.13" % "test")
-  else if (v == "2.9.3")        Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
-                                    "org.specs2_2.9.2" % "specs2" % "1.12.3" % "test")
-  else if (v.startsWith("2.9")) Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
-                                    "org.specs2" %% "specs2" % "1.12.3" % "test")
-  else sys.error("Not supported scala version: " + v)
+  Seq("com.yammer.metrics" % "metrics-core" % "2.2.0", "org.slf4j" % "slf4j-api" % "1.7.5") ++ (
+      if (v.startsWith("2.10"))     Seq("org.specs2" %% "specs2" % "1.13" % "test")
+      else if (v == "2.9.3")        Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
+                                        "org.specs2" % "specs2_2.9.2" % "1.12.3" % "test")
+      else if (v.startsWith("2.9")) Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
+                                        "org.specs2" %% "specs2" % "1.12.3" % "test")
+      else sys.error("Not supported scala version: " + v))
 }
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
