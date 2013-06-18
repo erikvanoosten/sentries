@@ -33,19 +33,20 @@ resolvers ++= Seq(
 )
 
 libraryDependencies <++= (scalaVersion) { v: String =>
-  if (v.startsWith("2.10"))     Seq("com.yammer.metrics" % "metrics-core" % "2.1.5",
+  if (v.startsWith("2.10"))     Seq("com.yammer.metrics" % "metrics-core" % "2.2.0",
+                                    "org.slf4j" % "slf4j-api" % "1.7.5",
                                     "org.specs2" %% "specs2" % "1.13" % "test")
-  else if (v.startsWith("2.9")) Seq("com.yammer.metrics" % "metrics-core" % "2.1.5",
+  else if (v.startsWith("2.9")) Seq("com.yammer.metrics" % "metrics-core" % "2.2.0",
+                                    "org.slf4j" % "slf4j-api" % "1.7.5",
                                     "com.typesafe.akka" % "akka-actor" % "2.0.5",
                                     "org.specs2" %% "specs2" % "1.12.3" % "test")
-  else Seq()
+  else sys.error("Not supported scala version: " + v)
 }
 
-javacOptions ++= Seq("-Xmx512m", "-Xms128m", "-Xss10m")
-
-javaOptions += "-Xmx512m"
-
 scalacOptions ++= Seq("-deprecation", "-unchecked")
+
+// Running all tests in parallel gives too much contention.
+testOptions in Test += Tests.Argument("threadsNb", "2")
 
 publishTo <<= version { v: String =>
   val nexus = "https://oss.sonatype.org/"

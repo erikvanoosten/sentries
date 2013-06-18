@@ -96,9 +96,9 @@ class JmxReporter(
         // This is often thrown when the process is shutting down. An application with lots of
         // sentries will often begin unregistering sentries *after* JMX itself has cleared,
         // resulting in a huge dump of exceptions as the process is exiting.
-        logger.trace("Error unregistering {}", objectName, e)
+        logger.trace("Error unregistering {}", Array(objectName, e))
       case e: MBeanRegistrationException =>
-        logger.debug("Error unregistering {}", objectName, e)
+        logger.debug("Error unregistering {}", Array(objectName, e))
     }
   }
 }
