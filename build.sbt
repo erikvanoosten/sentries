@@ -33,12 +33,13 @@ resolvers ++= Seq(
 )
 
 libraryDependencies <++= (scalaVersion) { v: String =>
-  if (v.startsWith("2.10"))     Seq("com.yammer.metrics" % "metrics-core" % "2.2.0",
-                                    "org.slf4j" % "slf4j-api" % "1.7.5",
-                                    "org.specs2" %% "specs2" % "1.13" % "test")
-  else if (v.startsWith("2.9")) Seq("com.yammer.metrics" % "metrics-core" % "2.2.0",
-                                    "org.slf4j" % "slf4j-api" % "1.7.5",
-                                    "com.typesafe.akka" % "akka-actor" % "2.0.5",
+  Seq(
+    "com.yammer.metrics" % "metrics-core" % "2.2.0",
+    "org.slf4j" % "slf4j-api" % "1.7.5") ++
+  if (v.startsWith("2.10"))     Seq("org.specs2" %% "specs2" % "1.13" % "test")
+  else if (v == "2.9.3")        Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
+                                    "org.specs2_2.9.2" % "specs2" % "1.12.3" % "test")
+  else if (v.startsWith("2.9")) Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
                                     "org.specs2" %% "specs2" % "1.12.3" % "test")
   else sys.error("Not supported scala version: " + v)
 }
