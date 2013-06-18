@@ -12,11 +12,11 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.6-SNAPSHOT"
+version := "0.6"
 
 scalaVersion := "2.10.0"
 
-crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2", "2.10.0")
+crossScalaVersions := Seq("2.9.1", "2.9.1-1", "2.9.2", "2.9.3", "2.10.0")
 
 crossVersion := CrossVersion.binary
 
