@@ -36,7 +36,8 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    *
    * Four timers are registered: "all", "success", "fail" and "notAvailable". These are update for respectively
    * each invocation, succeeding invocations, invocations that throw an exception, and invocations that are blocked
-   * by a sentry that is later in the chain (detected by catching [[nl.grons.sentries.support.NotAvailableException]]s).
+   * by a sentry that is later in the chain (detected by catching
+   * [[nl.grons.sentries.support.NotAvailableException NotAvailableException]]s).
    *
    * When 4 timers is too much detail, use [[.withMetrics]] instead.
    *
@@ -54,6 +55,16 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    */
   def withFailLimit(failLimit: Int, retryDelay: Duration): ChainableSentry with SentryBuilder =
     withSentry(new CircuitBreakerSentry(resourceName, failLimit, retryDelay, owner))
+
+  /**
+   * Append an adaptive throughput sentry to the current sentry.
+   * See [[nl.grons.sentries.core.AdaptiveThroughputSentry AdaptiveThroughputSentry]] for more information.
+   *
+   * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to 0.95
+   * @return a new sentry that adaptively changes allowed throughput on top of the current sentry behavior
+   */
+  def withAdaptiveThroughput(targetSuccessRatio: Double = 0.95D): ChainableSentry with SentryBuilder =
+    withSentry(new AdaptiveThroughputSentry(resourceName, targetSuccessRatio, owner))
 
   /**
    * Append a concurrency limit sentry to the current sentry.
