@@ -13,7 +13,7 @@ package nl.grons.sentries.core
 import org.specs2.mutable.Specification
 import nl.grons.sentries.support.NotAvailableException
 import org.specs2.specification.Scope
-import java.util.concurrent.{ExecutionException, Future, Callable, Executors}
+import java.util.concurrent._
 import scala.collection.JavaConverters._
 
 /**
@@ -41,7 +41,7 @@ class RateLimitSentryTest extends Specification {
       sentry(fastCode) must_== "fast"
       sentry(fastCode) must_== "fast"
       sentry(notInvokedCode) must throwA[NotAvailableException]
-      Thread.sleep(101L)
+      Thread.sleep(delay + 5L)
       sentry(fastCode) must_== "fast"
     }
 
@@ -56,8 +56,15 @@ class RateLimitSentryTest extends Specification {
     "be multi-thread safe" in new SentryContext {
       val executor = Executors.newFixedThreadPool(10)
       try {
+        // The barrier makes sure all threads start roughly at the same time. This is needed because
+        // create threads has a wide latency variance.
+        val barrier = new CyclicBarrier(10)
         val task = new Callable[String] {
-          def call() = sentry(fastCode)
+          def call() = {
+            // The long timeout makes sure that even in the event of failures, the test will complete.
+            barrier.await(3 * delay, TimeUnit.MILLISECONDS)
+            sentry(fastCode)
+          }
         }
         val tasks = Vector.fill(10)(task).asJava
 
@@ -65,7 +72,7 @@ class RateLimitSentryTest extends Specification {
         val futures = executor.invokeAll(tasks).asScala
         futuresToOptions(futures).filter(_ == Some("fast")).size must_== 3
 
-        Thread.sleep(101L)
+        Thread.sleep(delay + 5L)
 
         // Once more:
         val futures2 = executor.invokeAll(tasks).asScala
@@ -78,7 +85,8 @@ class RateLimitSentryTest extends Specification {
   }
 
   trait SentryContext extends Scope {
-    val sentry = new RateLimitSentry("testSentry", 3, 100L, classOf[RateLimitSentryTest])
+    val delay: Long = 300L
+    val sentry = new RateLimitSentry("testSentry", 3, delay, classOf[RateLimitSentryTest])
 
     def fastCode = "fast"
 
