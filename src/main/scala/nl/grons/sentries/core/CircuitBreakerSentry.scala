@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
 import com.yammer.metrics.core.{MetricName, HealthCheck, Gauge}
 import com.yammer.metrics.{Metrics, HealthChecks}
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
-import nl.grons.sentries.core.States._
 import nl.grons.sentries.cross.Concurrent.Duration
 import scala.util.control.ControlThrowable
 
@@ -28,6 +27,7 @@ class CircuitBreakerSentry(
   val retryDelay: Duration,
   owner: Class[_]
 ) extends ChainableSentry {
+  import CircuitBreakerSentry._
 
   val sentryType = "failLimit"
 
@@ -98,7 +98,7 @@ class CircuitBreakerSentry(
 
 }
 
-private object States {
+private object CircuitBreakerSentry {
   abstract class State(cb: CircuitBreakerSentry) {
     def preInvoke()
 
