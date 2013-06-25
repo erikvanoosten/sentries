@@ -11,14 +11,14 @@
 package nl.grons.sentries.support
 
 import com.yammer.metrics.core.MetricName
-import javax.management.{MBeanRegistrationException, InstanceNotFoundException, ObjectName, MBeanServer}
 import java.lang.management.ManagementFactory
-import scala.collection.JavaConverters._
 import java.util.concurrent.ConcurrentHashMap
-import org.slf4j.LoggerFactory
+import javax.management.{MBeanRegistrationException, InstanceNotFoundException, ObjectName, MBeanServer}
 import nl.grons.sentries
-import nl.grons.sentries.SentrySupport
 import nl.grons.sentries.cross.Concurrent._
+import nl.grons.sentries.SentrySupport
+import org.slf4j.LoggerFactory
+import scala.collection.JavaConverters._
 
 /**
  * A reporter which exposes sentries as JMX MBeans.
@@ -46,6 +46,7 @@ class JmxReporter(
   private def createMBean(sentry: NamedSentry): JmxReporter.SentryMBean = {
     sentry match {
       case s: sentries.core.CircuitBreakerSentry => new JmxReporter.CircuitBreakerSentry(s)
+      case s: sentries.core.AdaptiveThroughputSentry => new JmxReporter.AdaptiveThroughputSentry(s)
       case s => new JmxReporter.Sentry(s)
     }
   }
@@ -60,10 +61,10 @@ class JmxReporter(
   }
 
   /**
-   * Returns a new [[scala.collection.mutable.ConcurrentMap]] implementation. Subclass this to do weird things with
+   * Returns a new ConcurrentMap implementation. Subclass this to do weird things with
    * your own [[nl.grons.sentries.support.JmxReporter]] implementation.
    *
-   * @return a new [[scala.collection.mutable.ConcurrentMap]]
+   * @return a new ConcurrentMap
    */
   protected def newRegisteredBeansMap(): CMap[MetricName, ObjectName] =
     new ConcurrentHashMap[MetricName, ObjectName](1024).asScala
@@ -115,6 +116,13 @@ object JmxReporter {
     def trip()
   }
   class CircuitBreakerSentry(sentry: nl.grons.sentries.core.CircuitBreakerSentry) extends Sentry(sentry) with CircuitBreakerSentryMBean {
+    def trip() { sentry.trip() }
+  }
+
+  trait AdaptiveThroughputSentryMBean extends SentryMBean {
+    def trip()
+  }
+  class AdaptiveThroughputSentry(sentry: nl.grons.sentries.core.AdaptiveThroughputSentry) extends Sentry(sentry) with AdaptiveThroughputSentryMBean {
     def trip() { sentry.trip() }
   }
 }

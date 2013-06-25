@@ -10,14 +10,15 @@
 
 package nl.grons.sentries.core
 
-import java.util.concurrent.atomic.AtomicReference
-import com.yammer.metrics.core.{MetricName, HealthCheck, Gauge}
+import com.yammer.metrics.core.{MetricName, HealthCheck}
 import com.yammer.metrics.{Metrics, HealthChecks}
-import nl.grons.sentries.support.{LongAdder, NotAvailableException, ChainableSentry}
-import nl.grons.sentries.cross.Concurrent.Duration
-import scala.util.control.ControlThrowable
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.TimeUnit
+import nl.grons.sentries.cross.Concurrent.Duration
+import nl.grons.sentries.support.{LongAdder, NotAvailableException, ChainableSentry}
+import nl.grons.sentries.support.MetricsSupport._
 import scala.concurrent.forkjoin.ThreadLocalRandom
+import scala.util.control.ControlThrowable
 
 /**
  * A sentry that adapts throughput with the success ratio of invoking the protected resource. Think of it as
@@ -33,10 +34,20 @@ import scala.concurrent.forkjoin.ThreadLocalRandom
  * The success ratio is calculated per `evaluationDelay` with a simple `1 - (fail count / success count)`.
  * When the success ratio is below `targetSuccessRatio`, the throughput is reduced to
  * `currentSuccessRatio * currentThroughputRatio`. When the success ratio is again equal to or above the target ratio,
- * throughput is increased by 20% with a minimum of 0.0001D (1 in thousand calls may proceed).
+ * throughput is increased by `successIncreaseFactor` (defaults to +20%) with a minimum of 0.0001D (1 in thousand calls
+ * may proceed).
+ * Note that regardless of the `currentThroughputRatio`, at least 1 call per evaluation period is allowed to continue.
  *
- * When there is a calamity, this sentry only reacts as fast as the given `evaluationDelay`, typically 1 second.
- * When the resource becomes fully available, it takes about 50 evaluation before throughput is back at 100%.
+ * When there is a calamity, this sentry only reacts as fast as the given `evaluationDelay` (1 second by default).
+ * When the resource becomes fully available, it takes at most 39 evaluation before throughput is back at 100%.
+ * You can test this by evaluating the following code in a Scala REPL:
+ * {{{
+ * scala> val successIncreaseFactor = 1.2D
+ * successIncreaseFactor: Double = 1.2
+ *
+ * scala> Stream.iterate(0.0D)(x => (x * successIncreaseFactor).max(0.001).min(1.0D)).zipWithIndex.takeWhile(_._1 < 1.0).last._2 + 1
+ * res0 Int = 39
+ * }}}
  *
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  *
@@ -49,11 +60,13 @@ class AdaptiveThroughputSentry(
   val resourceName: String,
   val targetSuccessRatio: Double,
   owner: Class[_],
-  val evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS)
+  val evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
+  successIncreaseFactor: Double = 1.2D
 ) extends ChainableSentry {
   import AdaptiveThroughputSentry._
 
   require(targetSuccessRatio > 0 && targetSuccessRatio < 1, "0 < targetSuccessRatio < 1 but is " + targetSuccessRatio)
+  require(successIncreaseFactor > 1.0, "successIncreaseFactor > 1 but is " + successIncreaseFactor)
 
   val sentryType = "failRatioLimit"
 
@@ -61,15 +74,14 @@ class AdaptiveThroughputSentry(
 
   HealthChecks.register(new HealthCheck(new MetricName(owner, constructName()).getMBeanName) {
     def check() = {
-      val ctr = currentThroughputRatio
+      val ctr = throughputRatio
       if (ctr == 1.0) HealthCheck.Result.healthy
       else HealthCheck.Result.unhealthy("throughput limited to " + (ctr * 100).toInt + "%")
     }
   })
 
-  Metrics.newGauge(owner, constructName("throughputRatio"), new Gauge[Double] {
-    def value = currentThroughputRatio
-  })
+  Metrics.newGauge(owner, constructName("throughputRatio"), throughputRatio)
+  Metrics.newGauge(owner, constructName("failRatio"), failRatio)
 
   def apply[T](r: => T): T = {
     state.get.preInvoke(r _)
@@ -110,8 +122,12 @@ class AdaptiveThroughputSentry(
   /**
    * The current throughput ratio (0 <= ratio <= 1).
    */
-  def currentThroughputRatio: Double =
-    state.get.throughputRatio
+  def throughputRatio: Double = state.get.throughputRatio
+
+  /**
+   * The current fail ratio (0 <= ratio <= 1).
+   */
+  def failRatio: Double = 1.0 - state.get.successRatio
 
   /**
    * Try to start the next state.
@@ -159,7 +175,7 @@ private object AdaptiveThroughputSentry {
       failCount.increment()
     }
 
-    private def successRatio: Double = {
+    def successRatio: Double = {
       val cc = callCount.doubleValue()
       if (cc == 0.0)
         // Prevent divide by zero

@@ -62,33 +62,33 @@ class AdaptiveThroughputSentryTest extends Specification {
       trip(1)
 
       // Throughput must not be affected.
-      sentry.currentThroughputRatio must_== 1.0D
+      sentry.throughputRatio must_== 1.0D
     }
 
     "reduce throughput after success ratio dropped below target" in new SentryContext {
       // 3 in 10 throw an exception -> fail ratio is below target fail ratio
       trip(3)
       // Throughput must be reduced.
-      sentry.currentThroughputRatio must_== 0.7D
+      sentry.throughputRatio must_== 0.7D
 
       // 10 in 10 throw an exception -> fail ratio is still below target fail ratio
       // Note: we must let all invocations fail, as only 30% of all calls are let through, there exists
       // the chance that not enough of our failures are invoked.
       trip(10, 1)
       // Throughput must be reduced further (close to 0, we only 1 succeeding attempt at the end of trip()).
-      sentry.currentThroughputRatio must beCloseTo(0.0D, 0.1D)
+      sentry.throughputRatio must beCloseTo(0.0D, 0.1D)
     }
 
     "increase throughput after success ratio increased above target" in new SentryContext {
       // 3 in 10 throw an exception -> fail ratio is below target fail ratio
       trip(3)
       // Throughput must be reduced.
-      sentry.currentThroughputRatio must_== 0.7D
+      sentry.throughputRatio must_== 0.7D
 
       // 1 in 10 throw an exception -> fail ratio is above target fail ratio again
       trip(1, 1)
       // Throughput must be increased.
-      sentry.currentThroughputRatio must_== 1.2D * 0.7D
+      sentry.throughputRatio must_== 1.2D * 0.7D
     }
 
     "allow access to resource once every evaluation period even when throughput is 0" in new SentryContext {
@@ -111,7 +111,7 @@ class AdaptiveThroughputSentryTest extends Specification {
       }
 
       // Current throughput must still be 0, otherwise some other bug was triggered.
-      sentry.currentThroughputRatio must_== 0.0D
+      sentry.throughputRatio must_== 0.0D
       // Lots of invocations must have been blocked, otherwise some other bug was triggered.
       resourceInvocationBlockedCount must be_>(50)
       // Two periods were started after sentry.trip(), each must have resulted in 1 allowed resource invocation.
@@ -123,7 +123,7 @@ class AdaptiveThroughputSentryTest extends Specification {
       trip(3, 0, throwANotAvailableException)
 
       // Throughput must not be affected.
-      sentry.currentThroughputRatio must_== 1.0D
+      sentry.throughputRatio must_== 1.0D
     }
 
     "be multi-thread safe" in { todo }

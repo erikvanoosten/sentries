@@ -10,10 +10,10 @@
 
 package nl.grons.sentries.core
 
+import com.yammer.metrics.Metrics
 import java.util.concurrent.Semaphore
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
-import com.yammer.metrics.core.Gauge
-import com.yammer.metrics.Metrics
+import nl.grons.sentries.support.MetricsSupport._
 
 /**
  * A sentry that limits the number of concurrent invocations.
@@ -30,9 +30,7 @@ class ConcurrencyLimitSentry(
   // Note: as we only use tryAcquire, no fairness is necessary.
   private[this] val semaphore = new Semaphore(concurrencyLimit, false)
 
-  Metrics.newGauge(owner, constructName("available"), new Gauge[Int] {
-    def value = semaphore.availablePermits()
-  })
+  Metrics.newGauge(owner, constructName("available"), semaphore.availablePermits())
 
   /**
    * Run the given code block in the context of this sentry, and return its value.

@@ -10,11 +10,12 @@
 
 package nl.grons.sentries.core
 
-import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
-import com.yammer.metrics.core.{MetricName, HealthCheck, Gauge}
+import com.yammer.metrics.core.{MetricName, HealthCheck}
 import com.yammer.metrics.{Metrics, HealthChecks}
-import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
+import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
 import nl.grons.sentries.cross.Concurrent.Duration
+import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
+import nl.grons.sentries.support.MetricsSupport._
 import scala.util.control.ControlThrowable
 
 /**
@@ -41,13 +42,11 @@ class CircuitBreakerSentry(
     }
   })
 
-  Metrics.newGauge(owner, constructName("state"), new Gauge[String] {
-    def value = state.get match {
+  Metrics.newGauge(owner, constructName("state"), state.get match {
       case _: FlowState => "flow"
       case _: BrokenState => "broken"
       case _ => "unknown"
-    }
-  })
+    })
 
   def apply[T](r: => T): T = {
     state.get.preInvoke()
