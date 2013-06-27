@@ -10,6 +10,7 @@
 
 package nl.grons.sentries.support
 
+import java.util.concurrent.TimeUnit
 import nl.grons.sentries.core._
 import nl.grons.sentries.cross.Concurrent._
 
@@ -48,6 +49,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
 
   /**
    * Append a circuit breaker sentry to the current sentry.
+   * See [[nl.grons.sentries.core.CircuitBreakerSentry]] for more information.
    *
    * @param failLimit number of failure after which the flow will be broken
    * @param retryDelay timeout for trying again
@@ -61,10 +63,33 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * See [[nl.grons.sentries.core.AdaptiveThroughputSentry]] for more information.
    *
    * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to 0.95
-   * @return a new sentry that adaptively changes allowed throughput on top of the current sentry behavior
+   * @param evaluationDelay the time between calculations of the current throughput, defaults to 1 second
+   * @param successIncreaseFactor factor to apply to current throughput ratio, `successIncreaseFactor > 1`, defaults to 1.2D
+   * @return a new sentry that adaptively changes allowed throughput after the current sentry behavior
    */
-  def withAdaptiveThroughput(targetSuccessRatio: Double = 0.95D): ChainableSentry with SentryBuilder =
-    withSentry(new AdaptiveThroughputSentry(owner, resourceName, targetSuccessRatio))
+  def withAdaptiveThroughput(
+      targetSuccessRatio: Double = 0.95D,
+      evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
+      successIncreaseFactor: Double = 1.2D
+  ): ChainableSentry with SentryBuilder =
+    withSentry(new AdaptiveThroughputSentry(owner, resourceName, targetSuccessRatio, evaluationDelay, successIncreaseFactor))
+
+  /**
+   * Append a circuit breaker AND an adaptive throughput sentry to the current sentry.
+   * See [[nl.grons.sentries.core.CircuitBreakerSentry]] and
+   * [[nl.grons.sentries.core.AdaptiveThroughputSentry]] for more information.
+   *
+   * @param failLimit number of failure after which the flow will be broken
+   * @param retryDelay timeout for trying again
+   * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to 0.95
+   * @return a new sentry that applies adaptive throughput after a circuit breaker after the current sentry behavior
+   */
+  def withFailLimitAndAdaptiveThroughput(
+    failLimit: Int,
+    retryDelay: Duration,
+    targetSuccessRatio: Double = 0.95D
+  ): ChainableSentry with SentryBuilder =
+    withFailLimit(failLimit, retryDelay).withAdaptiveThroughput(targetSuccessRatio, retryDelay)
 
   /**
    * Append a concurrency limit sentry to the current sentry.

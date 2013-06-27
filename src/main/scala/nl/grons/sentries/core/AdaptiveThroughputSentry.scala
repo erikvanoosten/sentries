@@ -53,13 +53,14 @@ import scala.util.control.ControlThrowable
  *
  * @param owner the owner class of this sentry
  * @param resourceName name of the resource
- * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`
+ * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to `0.95D`
  * @param evaluationDelay the time between calculations of the current throughput, defaults to 1 second
+ * @param successIncreaseFactor factor to apply to current throughput ratio, `successIncreaseFactor > 1`, defaults to 1.2D
  */
 class AdaptiveThroughputSentry(
   owner: Class[_],
   val resourceName: String,
-  val targetSuccessRatio: Double,
+  val targetSuccessRatio: Double = 0.95D,
   val evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
   successIncreaseFactor: Double = 1.2D
 ) extends ChainableSentry {

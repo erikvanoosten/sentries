@@ -22,6 +22,18 @@ import scala.util.control.ControlThrowable
 /**
  * A sentry that limits the number of consecutive failures; a.k.a. a circuit breaker.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
+ *
+ * The goal of a circuit breaker is to protect the caller from a resource that fails. It also protects the
+ * resource from overload when it is trying to recover. A circuit breaker works by keeping track of the
+ * number of consecutive failures. When there are more then consecutive `failLimit` failures, the circuit
+ * breaker 'breaks' and pro-actively blocks all following calls by throwing a
+ * [[nl.grons.sentries.core.CircuitBreakerBrokenException]].
+ *
+ * Every `retryDelay` one invocation is allowed through in order to test the resource. When this call succeeds,
+ * the circuit breaker goes back to the flow state. If not, it stays in the broken state.
+ *
+ * Please see [[http://day-to-day-stuff.blogspot.com/2013/02/breaking-circuit-breaker.html]] for a rationale
+ * of the used vocabulary (broken/flow state vs. the more known open/half open/close state).
  */
 class CircuitBreakerSentry(
   owner: Class[_],
