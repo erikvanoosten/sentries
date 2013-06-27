@@ -53,7 +53,9 @@ class MetricSentry(owner: Class[_], val resourceName: String) extends ChainableS
     all.update(duration, NANOSECONDS)
     result match {
       case Right(v) => v
-      case Left(e: ControlThrowable) => success.mark(); throw e
+      case Left(e: ControlThrowable) =>
+        // Used by Scala for control, it is equivalent to success
+        throw e
       case Left(e: NotAvailableException) => notAvailable.mark(); throw e
       case Left(e) => fail.mark(); throw e
     }
