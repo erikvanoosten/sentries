@@ -10,20 +10,20 @@
 
 package nl.grons.sentries.core
 
-import org.specs2.mutable.Specification
-import org.specs2.specification.Scope
-import nl.grons.sentries.support.{Sentry, NotAvailableException}
 import com.yammer.metrics.core.{Timer, MetricName}
 import com.yammer.metrics.Metrics
-import scala.util.control.Exception.ignoring
+import nl.grons.sentries.support.{Sentry, NotAvailableException}
+import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
 import scala.collection.JavaConverters._
+import scala.util.control.Exception.ignoring
 
 /**
- * Tests [[nl.grons.sentries.core.FullMetricsSentry]].
+ * Tests [[nl.grons.sentries.core.MetricSentry]].
  */
-class FullMetricsSentryTest extends Specification {
+class MetricSentryTest extends Specification {
 
-  "The Full Metric sentry" should {
+  "The metric sentry" should {
     "return value" in new SentryContext {
       sentry("test")("value") must_== "value"
     }
@@ -54,7 +54,7 @@ class FullMetricsSentryTest extends Specification {
   }
 
   private trait SentryContext extends Scope {
-    def sentry(resourceName: String) = new FullMetricsSentry(classOf[FullMetricsSentryTest], resourceName)
+    def sentry(resourceName: String) = new MetricSentry(classOf[MetricSentryTest], resourceName)
 
     def succeeding = "fast"
 
@@ -77,7 +77,7 @@ class FullMetricsSentryTest extends Specification {
     }
 
     def metricName(resourceName: String, timerName: String): MetricName = {
-      new MetricName(classOf[FullMetricsSentryTest], resourceName + ".metrics." + timerName)
+      new MetricName(classOf[MetricSentryTest], resourceName + ".metrics." + timerName)
     }
   }
 

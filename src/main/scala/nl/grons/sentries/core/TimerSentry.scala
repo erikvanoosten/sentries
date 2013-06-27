@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
  * A single metrics is created: timer "all" for all invocations.
  *
  * This sentry can not be used in the same sentry chain as
- * the [[nl.grons.sentries.core.FullMetricsSentry]].
+ * the [[nl.grons.sentries.core.MetricSentry]].
  */
 class TimerSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 
-  val sentryType = "metric"
+  val sentryType = "metrics"
 
   private[this] val clock = Clock.defaultClock()
   private[this] val timer = Metrics.newTimer(owner, resourceName + "." + sentryType + ".all")

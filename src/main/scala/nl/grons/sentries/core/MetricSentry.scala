@@ -33,9 +33,9 @@ import scala.util.control.ControlThrowable
  * This sentry can not be used in the same sentry chain as
  * the [[nl.grons.sentries.core.TimerSentry]].
  */
-class FullMetricsSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
+class MetricSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 
-  val sentryType = "metric"
+  val sentryType = "metrics"
 
   private[this] val clock = Clock.defaultClock()
   private[this] val all = timerFor("all")

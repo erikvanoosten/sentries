@@ -22,7 +22,7 @@ import nl.grons.sentries.cross.Concurrent._
 abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRegistry: SentriesRegistry) {
 
   /**
-   * Append a metrics sentry to the current sentry.
+   * Append a metric sentry to the current sentry.
    *
    * One timer and 2 meter metrics are registered: "all", "fail" and "notAvailable".
    * The "all" timer times and counts all invocations, the "fail" meter counts invocations that
@@ -35,12 +35,12 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * To count the 'not available' invocations, this must be the first sentry in
    * the chain.
    *
-   * For more information see [[nl.grons.sentries.core.FullMetricsSentry]].
+   * For more information see [[nl.grons.sentries.core.MetricSentry]].
    *
    * @return a new sentry that collects metrics after the current sentry behavior
    */
   def withMetrics: ChainableSentry with SentryBuilder =
-    withSentry(new FullMetricsSentry(owner, resourceName))
+    withSentry(new MetricSentry(owner, resourceName))
 
   /**
    * Append a timer sentry to the current sentry.
