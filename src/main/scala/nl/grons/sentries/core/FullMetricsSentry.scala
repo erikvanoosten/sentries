@@ -10,10 +10,10 @@
 
 package nl.grons.sentries.core
 
-import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import com.yammer.metrics.core.Clock
 import com.yammer.metrics.Metrics
-import java.util.concurrent.TimeUnit.NANOSECONDS
+import java.util.concurrent.TimeUnit.{NANOSECONDS, SECONDS}
+import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import scala.util.control.ControlThrowable
 
 /**
@@ -23,7 +23,6 @@ import scala.util.control.ControlThrowable
  * The following metrics are created:
  *
  * - timer "all" for all invocations
- * - meter "success" for successful invocations
  * - meter "notAvailable" for invocations leading to a [[nl.grons.sentries.support.NotAvailableException]],
  *   e.g. all invocations blocked by a sentry
  * - meter "fail" for other failed invocations
@@ -39,10 +38,9 @@ class FullMetricsSentry(owner: Class[_], val resourceName: String) extends Chain
   val sentryType = "metrics"
 
   private[this] val clock = Clock.defaultClock()
-  private[this] val all = metricFor("all")
-  private[this] val success = metricFor("success")
-  private[this] val notAvailable = metricFor("notAvailable")
-  private[this] val fail = metricFor("fail")
+  private[this] val all = timerFor("all")
+  private[this] val notAvailable = meterFor("notAvailable")
+  private[this] val fail = meterFor("fail")
 
   /**
    * Run the given code block in the context of this sentry, and return its value.
@@ -54,15 +52,16 @@ class FullMetricsSentry(owner: Class[_], val resourceName: String) extends Chain
 
     all.update(duration, NANOSECONDS)
     result match {
-      case Right(v) => success.update(duration, NANOSECONDS); v
-      case Left(e: ControlThrowable) => success.update(duration, NANOSECONDS); throw e
-      case Left(e: NotAvailableException) => notAvailable.update(duration, NANOSECONDS); throw e
-      case Left(e) => fail.update(duration, NANOSECONDS); throw e
+      case Right(v) => v
+      case Left(e: ControlThrowable) => success.mark(); throw e
+      case Left(e: NotAvailableException) => notAvailable.mark(); throw e
+      case Left(e) => fail.mark(); throw e
     }
   }
 
   def reset() {}
 
-  private def metricFor(metric: String) = Metrics.newTimer(owner, resourceName + "." + sentryType + "." + metric)
+  private def timerFor(metric: String) = Metrics.newTimer(owner, resourceName + "." + sentryType + "." + metric)
+  private def meterFor(metric: String) = Metrics.newMeter(owner, resourceName + "." + sentryType + "." + metric, "invocation", SECONDS)
 
 }
