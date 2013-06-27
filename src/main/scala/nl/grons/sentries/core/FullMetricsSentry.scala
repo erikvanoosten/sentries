@@ -31,11 +31,11 @@ import scala.util.control.ControlThrowable
  * must be the first sentry in the chain.
  *
  * This sentry can not be used in the same sentry chain as
- * the [[nl.grons.sentries.core.MetricsSentry]].
+ * the [[nl.grons.sentries.core.TimerSentry]].
  */
 class FullMetricsSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 
-  val sentryType = "metrics"
+  val sentryType = "metric"
 
   private[this] val clock = Clock.defaultClock()
   private[this] val all = timerFor("all")

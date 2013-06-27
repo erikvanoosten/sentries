@@ -10,20 +10,20 @@
 
 package nl.grons.sentries.core
 
-import org.specs2.mutable.Specification
-import org.specs2.specification.Scope
-import nl.grons.sentries.support.NotAvailableException
 import com.yammer.metrics.core.{Timer, MetricName}
 import com.yammer.metrics.Metrics
-import scala.util.control.Exception.ignoring
+import nl.grons.sentries.support.NotAvailableException
+import org.specs2.mutable.Specification
+import org.specs2.specification.Scope
 import scala.collection.JavaConverters._
+import scala.util.control.Exception.ignoring
 
 /**
- * Tests [[nl.grons.sentries.core.MetricsSentry]].
+ * Tests [[nl.grons.sentries.core.TimerSentry]].
  */
-class MetricsSentryTest extends Specification {
+class TimerSentryTest extends Specification {
 
-  "The Metric sentry" should {
+  "The timer sentry" should {
     "return value" in new SentryContext {
       sentry("test")("value") must_== "value"
     }
@@ -45,7 +45,7 @@ class MetricsSentryTest extends Specification {
   }
 
   private trait SentryContext extends Scope {
-    def sentry(resourceName: String) = new MetricsSentry(classOf[MetricsSentryTest], resourceName)
+    def sentry(resourceName: String) = new TimerSentry(classOf[TimerSentryTest], resourceName)
 
     def succeeding = "fast"
 
@@ -62,7 +62,7 @@ class MetricsSentryTest extends Specification {
     }
 
     def metricName(resourceName: String): MetricName = {
-      new MetricName(classOf[MetricsSentryTest], resourceName + ".metrics.all")
+      new MetricName(classOf[TimerSentryTest], resourceName + ".metrics.all")
     }
   }
 

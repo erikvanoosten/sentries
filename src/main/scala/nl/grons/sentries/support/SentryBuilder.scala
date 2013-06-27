@@ -24,28 +24,36 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
   /**
    * Append a metrics sentry to the current sentry.
    *
-   * One timer is registered: "all". It is update for each invocation.
-   * For more extensive measuring, use [[.withFullMetrics]] instead.
+   * One timer and 2 meter metrics are registered: "all", "fail" and "notAvailable".
+   * The "all" timer times and counts all invocations, the "fail" meter counts invocations that
+   * threw an exception, and the "notAvailable" meter counts invocations that were blocked
+   * by a sentry that is later in the chain (detected by catching
+   * [[nl.grons.sentries.support.NotAvailableException]]s).
+   *
+   * When only a timer is needed, use [[.withTimer]] instead.
+   *
+   * To count the 'not available' invocations, this must be the first sentry in
+   * the chain.
+   *
+   * For more information see [[nl.grons.sentries.core.FullMetricsSentry]].
    *
    * @return a new sentry that collects metrics after the current sentry behavior
    */
   def withMetrics: ChainableSentry with SentryBuilder =
-    withSentry(new MetricsSentry(owner, resourceName))
+    withSentry(new FullMetricsSentry(owner, resourceName))
 
   /**
-   * Append an extensive metrics sentry to the current sentry.
+   * Append a timer sentry to the current sentry.
    *
-   * Four timers are registered: "all", "success", "fail" and "notAvailable". These are update for respectively
-   * each invocation, succeeding invocations, invocations that throw an exception, and invocations that are blocked
-   * by a sentry that is later in the chain (detected by catching
-   * [[nl.grons.sentries.support.NotAvailableException]]s).
+   * One timer is registered: "all". It is updated for each invocation.
+   * For more extensive measuring, use [[.withMetrics]] instead.
    *
-   * When 4 timers is too much detail, use [[.withMetrics]] instead.
+   * For more information see [[nl.grons.sentries.core.TimerSentry]].
    *
    * @return a new sentry that collects metrics after the current sentry behavior
    */
-  def withFullMetrics: ChainableSentry with SentryBuilder =
-    withSentry(new FullMetricsSentry(owner, resourceName))
+  def withTimer: ChainableSentry with SentryBuilder =
+    withSentry(new TimerSentry(owner, resourceName))
 
   /**
    * Append a circuit breaker sentry to the current sentry.

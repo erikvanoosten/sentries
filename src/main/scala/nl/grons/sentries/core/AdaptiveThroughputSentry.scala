@@ -72,8 +72,6 @@ class AdaptiveThroughputSentry(
   val sentryType = "failRatioLimit"
 
   private[this] val state = new AtomicReference[State](new State(this, 1.0D))
-  private[this] val allCallsMeter = Metrics.newMeter(owner, constructName("all"), "invocation", TimeUnit.SECONDS)
-  private val blockedCallsMeter = Metrics.newMeter(owner, constructName("blocked"), "invocation", TimeUnit.SECONDS)
 
   HealthChecks.register(new HealthCheck(new MetricName(owner, constructName()).getMBeanName) {
     def check() = {
@@ -87,7 +85,6 @@ class AdaptiveThroughputSentry(
   Metrics.newGauge(owner, constructName("failRatio"), failRatio)
 
   def apply[T](r: => T): T = {
-    allCallsMeter.mark()
     state.get.preInvoke()
     try {
       val ret = r
@@ -161,12 +158,10 @@ private object AdaptiveThroughputSentry {
       val evaluate = System.currentTimeMillis > nextEvaluationAt
       if (!(evaluate && ats.attemptNextState(this, nextThroughputRatio)) && throughputRatio < 1.0) {
         val luckyNumber = ThreadLocalRandom.current().nextDouble()
-        if (luckyNumber > throughputRatio) {
-          ats.blockedCallsMeter.mark()
+        if (luckyNumber > throughputRatio)
           throw new ReducedThroughputException(ats.resourceName,
             "%s has reduced throughput because success ratio is below %d%%, current throughput is %d%%".format(
               ats.resourceName, (ats.targetSuccessRatio * 100).toInt, (throughputRatio * 100).toInt))
-        }
       }
       // If no exception was thrown, this invocation may proceed
     }

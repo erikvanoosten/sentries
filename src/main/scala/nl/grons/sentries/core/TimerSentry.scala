@@ -16,7 +16,7 @@ import com.yammer.metrics.Metrics
 import java.util.concurrent.TimeUnit.NANOSECONDS
 
 /**
- * Sentry that collects metric of invocations.
+ * Sentry that times invocations.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  *
  * A single metrics is created: timer "all" for all invocations.
@@ -24,9 +24,9 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
  * This sentry can not be used in the same sentry chain as
  * the [[nl.grons.sentries.core.FullMetricsSentry]].
  */
-class MetricsSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
+class TimerSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 
-  val sentryType = "metrics"
+  val sentryType = "metric"
 
   private[this] val clock = Clock.defaultClock()
   private[this] val timer = Metrics.newTimer(owner, resourceName + "." + sentryType + ".all")
