@@ -33,7 +33,7 @@ See [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/gro
 
 SBT:
 ```
-libraryDependencies += "nl.grons" %% "sentries" % "0.5"
+libraryDependencies += "nl.grons" %% "sentries" % "0.6.2"
 ```
 
 Maven:
@@ -82,9 +82,9 @@ new nl.grons.sentries.support.JmxReporter().start()
 * Code to make the library friendly to use is not part of the core.
 * Readability of code triumphs all other considerations.
 * If it doesn't perform, make it optional (this basically means that almost every feature is optional).
-* Dependencies are avoided. Right now its: JVM 6+, Scala 2.9 and Akka 2.0.5 or Scala 2.10, Metrics-core 2.1.5.
-* Follow effective scala guidelines from Twitter
-* Two space indents, use full imports, do not auto-format
+* Dependencies are avoided. Right now its: JVM 6+, Scala 2.9 and Akka 2.0.5 or Scala 2.10, Metrics-core 2.2.0.
+* Follow effective scala guidelines from Twitter.
+* Two space indents, use full imports, do not auto-format.
 * API might break between major versions and before 1.0.0 is reached.
 
 ## Sentries in tests
