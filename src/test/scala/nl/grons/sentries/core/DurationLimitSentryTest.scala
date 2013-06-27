@@ -40,7 +40,7 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
 
   private trait SentryContext extends Scope {
     val sentry = new DurationLimitSentry("testSentry", Duration(200L, TimeUnit.MILLISECONDS)) {
-      override val executionContext = nonLoggingExecutionContext(SentriesRegistry.executor)
+      override lazy val executionContext = nonLoggingExecutionContext(SentriesRegistry.executor)
     }
 
     def fastCode = "fast"

@@ -28,25 +28,23 @@ class MetricSentryTest extends Specification {
       sentry("test")("value") must_== "value"
     }
 
-    "detect success in Metrics timers 'all' and 'success'" in new SentryContext {
+    "detect success in Metrics timer 'all'" in new SentryContext {
       sentry("success")(succeeding)
       registeredTimer("success", "all").map(_.count()) must_== Some(1)
-      registeredTimer("success", "success").map(_.count()) must_== Some(1)
     }
 
-    "detect success by jumping out of closure in Metrics timers 'all' and 'success'" in new SentryContext {
+    "detect success by jumping out of closure in Metrics timer 'all'" in new SentryContext {
       succeedingByBreakingOutOfClosure(sentry("success_2")) must_== "yes"
       registeredTimer("success_2", "all").map(_.count()) must_== Some(1)
-      registeredTimer("success_2", "success").map(_.count()) must_== Some(1)
     }
 
-    "detect failure in Metrics timers 'all' and 'fail'" in new SentryContext {
+    "detect failure in Metrics timer 'all' and meter 'fail'" in new SentryContext {
       ignoring(classOf[IllegalArgumentException])(sentry("fail")(failing))
       registeredTimer("fail", "all").map(_.count()) must_== Some(1)
       registeredTimer("fail", "fail").map(_.count()) must_== Some(1)
     }
 
-    "detect non availability in Metrics timers 'all' and 'not available'" in new SentryContext {
+    "detect non availability in Metrics timers 'all' and meter 'not available'" in new SentryContext {
       ignoring(classOf[NotAvailableException])(sentry("notAvailable")(notAvailable))
       registeredTimer("notAvailable", "all").map(_.count()) must_== Some(1)
       registeredTimer("notAvailable", "notAvailable").map(_.count()) must_== Some(1)
