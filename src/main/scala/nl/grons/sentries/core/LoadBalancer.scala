@@ -28,7 +28,7 @@ import scala.annotation.tailrec
  * @tparam R type of resource
  */
 abstract class LoadBalancer[R](loadBalancerName: String, val reporter: (String, NotAvailableException) => Unit = (_, _) => () ) {
-  // NOTE: when using Java 7 override with ThreadLocalRandom.current()
+  // NOTE: when using Java 8 override with ThreadLocalRandom.current()
   val random = new Random()
 
   def resources: IndexedSeq[(R, NamedSentry)]

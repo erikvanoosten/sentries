@@ -19,6 +19,20 @@ import scala.util.control.ControlThrowable
 /**
  * Sentry that collects metric of invocations.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
+ *
+ * The following metrics are created:
+ *
+ * - timer "all" for all invocations
+ * - meter "success" for successful invocations
+ * - meter "notAvailable" for invocations leading to a [[nl.grons.sentries.support.NotAvailableException]],
+ *   e.g. all invocations blocked by a sentry
+ * - meter "fail" for other failed invocations
+ *
+ * Note that in other to make effective use of the "notAvailable" meter, this sentry
+ * must be the first sentry in the chain.
+ *
+ * This sentry can not be used in the same sentry chain as
+ * the [[nl.grons.sentries.core.MetricsSentry]].
  */
 class FullMetricsSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 

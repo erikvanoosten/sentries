@@ -18,16 +18,24 @@ import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException, Chain
  * A sentry that limits the duration of an invocation.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  *
- * WARNING: do NOT use this sentry when you invoke it from 1) a [[akka.dispatch.Future]] or 2) an [[akka.actor.Actor]].
+ * The goal of a duration limiter is to support callers that are only interested
+ * in the results for a limited time.
+ *
+ * WARNING: do NOT use this sentry when you invoke it from a `Future` or an `Actor`.
  * For such circumstances you are MUCH better of with a timeout on the enclosing future or a timeout message
  * within the actor.
  * Reason: this sentry blocks the current thread while waiting on a future that executes the task. Blocking the
  * current thread is an anti-pattern for futures and actors.
+ *
+ * Note that when the wait period has passed, the task still completes in another thread. Make
+ * sure there are enough threads in the executor. By default a `Executors.newCachedThreadPool()`
+ * is used which creates as much threads as needed. The executor can be changed by overriding
+ * [[.executionContext]].
  */
 class DurationLimitSentry(val resourceName: String, durationLimit: Duration) extends ChainableSentry {
   val sentryType = "durationLimit"
 
-  val executionContext = DurationLimitSentry.ec
+  lazy val executionContext = DurationLimitSentry.ec
 
   /**
    * Run the given code block in the context of this sentry, and return its value.

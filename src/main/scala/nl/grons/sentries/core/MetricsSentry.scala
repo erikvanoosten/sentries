@@ -18,6 +18,11 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
 /**
  * Sentry that collects metric of invocations.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
+ *
+ * A single metrics is created: timer "all" for all invocations.
+ *
+ * This sentry can not be used in the same sentry chain as
+ * the [[nl.grons.sentries.core.FullMetricsSentry]].
  */
 class MetricsSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 

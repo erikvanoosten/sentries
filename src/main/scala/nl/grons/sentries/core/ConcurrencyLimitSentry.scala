@@ -18,6 +18,9 @@ import nl.grons.sentries.support.MetricsSupport._
 /**
  * A sentry that limits the number of concurrent invocations.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
+ *
+ * The goal of a concurrency limiter is to prevent overloading of a shared resource.
+ * This sentry can be used as an alternative to a pool for easy to crate objects.
  */
 class ConcurrencyLimitSentry(
   owner: Class[_],
