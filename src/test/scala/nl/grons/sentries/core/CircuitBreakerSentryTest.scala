@@ -127,7 +127,8 @@ class CircuitBreakerSentryTest extends Specification {
 
   private trait SentryContext extends Scope {
     val retryDelayTime: Long = 300L
-    val sentry = new CircuitBreakerSentry("testSentry", 3, Duration(retryDelayTime, TimeUnit.MILLISECONDS), classOf[CircuitBreakerSentryTest])
+    val sentry = new CircuitBreakerSentry(
+      classOf[CircuitBreakerSentryTest], "testSentry", 3, Duration(retryDelayTime, TimeUnit.MILLISECONDS))
 
     def fastCode = "fast"
 

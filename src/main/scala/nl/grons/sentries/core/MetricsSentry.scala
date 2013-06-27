@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
  * Sentry that collects metric of invocations.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  */
-class MetricsSentry(val resourceName: String, owner: Class[_]) extends ChainableSentry {
+class MetricsSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 
   val sentryType = "metrics"
 

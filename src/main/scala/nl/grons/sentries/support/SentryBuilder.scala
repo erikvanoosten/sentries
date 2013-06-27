@@ -29,7 +29,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @return a new sentry that collects metrics after the current sentry behavior
    */
   def withMetrics: ChainableSentry with SentryBuilder =
-    withSentry(new MetricsSentry(resourceName, owner))
+    withSentry(new MetricsSentry(owner, resourceName))
 
   /**
    * Append an extensive metrics sentry to the current sentry.
@@ -37,14 +37,14 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * Four timers are registered: "all", "success", "fail" and "notAvailable". These are update for respectively
    * each invocation, succeeding invocations, invocations that throw an exception, and invocations that are blocked
    * by a sentry that is later in the chain (detected by catching
-   * [[nl.grons.sentries.support.NotAvailableException NotAvailableException]]s).
+   * [[nl.grons.sentries.support.NotAvailableException]]s).
    *
    * When 4 timers is too much detail, use [[.withMetrics]] instead.
    *
    * @return a new sentry that collects metrics after the current sentry behavior
    */
   def withFullMetrics: ChainableSentry with SentryBuilder =
-    withSentry(new FullMetricsSentry(resourceName, owner))
+    withSentry(new FullMetricsSentry(owner, resourceName))
 
   /**
    * Append a circuit breaker sentry to the current sentry.
@@ -54,17 +54,17 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @return a new sentry that applies a circuit breaker after the current sentry behavior
    */
   def withFailLimit(failLimit: Int, retryDelay: Duration): ChainableSentry with SentryBuilder =
-    withSentry(new CircuitBreakerSentry(resourceName, failLimit, retryDelay, owner))
+    withSentry(new CircuitBreakerSentry(owner, resourceName, failLimit, retryDelay))
 
   /**
    * Append an adaptive throughput sentry to the current sentry.
-   * See [[nl.grons.sentries.core.AdaptiveThroughputSentry AdaptiveThroughputSentry]] for more information.
+   * See [[nl.grons.sentries.core.AdaptiveThroughputSentry]] for more information.
    *
    * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to 0.95
    * @return a new sentry that adaptively changes allowed throughput on top of the current sentry behavior
    */
   def withAdaptiveThroughput(targetSuccessRatio: Double = 0.95D): ChainableSentry with SentryBuilder =
-    withSentry(new AdaptiveThroughputSentry(resourceName, targetSuccessRatio, owner))
+    withSentry(new AdaptiveThroughputSentry(owner, resourceName, targetSuccessRatio))
 
   /**
    * Append a concurrency limit sentry to the current sentry.
@@ -73,7 +73,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
   def withConcurrencyLimit(concurrencyLimit: Int): ChainableSentry with SentryBuilder =
-    withSentry(new ConcurrencyLimitSentry(resourceName, concurrencyLimit, owner))
+    withSentry(new ConcurrencyLimitSentry(owner, resourceName, concurrencyLimit))
 
   /**
    * Append a rate limit sentry to the current sentry.
@@ -83,12 +83,12 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
   def withRateLimit(rate: Int, per: Long): ChainableSentry with SentryBuilder =
-    withSentry(new RateLimitSentry(resourceName, rate, per, owner))
+    withSentry(new RateLimitSentry(owner, resourceName, rate, per))
 
   /**
    * Append a invocation duration limit sentry to the current sentry.
    *
-   * WARNING: do NOT use this sentry when you invoke it from 1) a [[akka.dispatch.Future]] or 2) an [[akka.actor.Actor]].
+   * WARNING: do NOT use this sentry when you invoke it from a `Future` or an `Actor`.
    * For such circumstances you are MUCH better of with a timeout on the enclosing future or a timeout message
    * within the actor.
    * Reason: this sentry blocks the current thread while waiting on a future that executes the task. Blocking the

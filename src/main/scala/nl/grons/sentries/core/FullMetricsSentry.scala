@@ -20,7 +20,7 @@ import scala.util.control.ControlThrowable
  * Sentry that collects metric of invocations.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  */
-class FullMetricsSentry(val resourceName: String, owner: Class[_]) extends ChainableSentry {
+class FullMetricsSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
 
   val sentryType = "metrics"
 

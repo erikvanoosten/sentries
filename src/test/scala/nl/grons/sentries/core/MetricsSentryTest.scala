@@ -45,7 +45,7 @@ class MetricsSentryTest extends Specification {
   }
 
   private trait SentryContext extends Scope {
-    def sentry(resourceName: String) = new MetricsSentry(resourceName, classOf[MetricsSentryTest])
+    def sentry(resourceName: String) = new MetricsSentry(classOf[MetricsSentryTest], resourceName)
 
     def succeeding = "fast"
 

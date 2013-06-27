@@ -20,10 +20,10 @@ import nl.grons.sentries.support.MetricsSupport._
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  */
 class RateLimitSentry(
+  owner: Class[_],
   val resourceName: String,
   rate: Int,
-  timeSpanMillis: Long,
-  owner: Class[_]
+  timeSpanMillis: Long
 ) extends ChainableSentry {
 
   private[this] val tokens = new AtomicInteger(rate)

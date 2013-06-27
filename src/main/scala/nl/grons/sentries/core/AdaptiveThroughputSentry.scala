@@ -51,15 +51,15 @@ import scala.util.control.ControlThrowable
  *
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  *
+ * @param owner the owner class of this sentry
  * @param resourceName name of the resource
  * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`
- * @param owner the owner class of this sentry
  * @param evaluationDelay the time between calculations of the current throughput, defaults to 1 second
  */
 class AdaptiveThroughputSentry(
+  owner: Class[_],
   val resourceName: String,
   val targetSuccessRatio: Double,
-  owner: Class[_],
   val evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
   successIncreaseFactor: Double = 1.2D
 ) extends ChainableSentry {
@@ -71,6 +71,8 @@ class AdaptiveThroughputSentry(
   val sentryType = "failRatioLimit"
 
   private[this] val state = new AtomicReference[State](new State(this, 1.0D))
+  private[this] val allCallsMeter = Metrics.newMeter(owner, constructName("all"), "invocation", TimeUnit.SECONDS)
+  private val blockedCallsMeter = Metrics.newMeter(owner, constructName("blocked"), "invocation", TimeUnit.SECONDS)
 
   HealthChecks.register(new HealthCheck(new MetricName(owner, constructName()).getMBeanName) {
     def check() = {
@@ -84,7 +86,8 @@ class AdaptiveThroughputSentry(
   Metrics.newGauge(owner, constructName("failRatio"), failRatio)
 
   def apply[T](r: => T): T = {
-    state.get.preInvoke(r _)
+    allCallsMeter.mark()
+    state.get.preInvoke()
     try {
       val ret = r
       state.get.postInvoke()
@@ -143,25 +146,26 @@ class AdaptiveThroughputSentry(
 }
 
 private object AdaptiveThroughputSentry {
-  class State(cb: AdaptiveThroughputSentry, val throughputRatio: Double) {
-    private[this] val nextEvaluationAt: Long = System.currentTimeMillis() + cb.evaluationDelay.toMillis
+  class State(ats: AdaptiveThroughputSentry, val throughputRatio: Double) {
+    private[this] val nextEvaluationAt: Long = System.currentTimeMillis() + ats.evaluationDelay.toMillis
     private[this] val callCount = new LongAdder
     private[this] val failCount = new LongAdder
 
-    def preInvoke(r: AnyRef) {
+    def preInvoke() {
       // The call may proceed under the following conditions:
       // - it is time to evaluate the next state and this thread is the first to do so OR
       // - throughputRatio is 1.0 OR
       // - throughputRatio is below 1.0 and our lucky number is below throughputRatio.
       // Otherwise an exception is thrown.
       val evaluate = System.currentTimeMillis > nextEvaluationAt
-      if (!(evaluate && cb.attemptNextState(this, nextThroughputRatio)) && throughputRatio < 1.0) {
-        // val luckyNumber = ((System.identityHashCode(r) >> 4) % 1013).toDouble / 1013D
+      if (!(evaluate && ats.attemptNextState(this, nextThroughputRatio)) && throughputRatio < 1.0) {
         val luckyNumber = ThreadLocalRandom.current().nextDouble()
-        if (luckyNumber > throughputRatio)
-          throw new ReducedThroughputException(cb.resourceName,
+        if (luckyNumber > throughputRatio) {
+          ats.blockedCallsMeter.mark()
+          throw new ReducedThroughputException(ats.resourceName,
             "%s has reduced throughput because success ratio is below %d%%, current throughput is %d%%".format(
-              cb.resourceName, (cb.targetSuccessRatio * 100).toInt, (throughputRatio * 100).toInt))
+              ats.resourceName, (ats.targetSuccessRatio * 100).toInt, (throughputRatio * 100).toInt))
+        }
       }
       // If no exception was thrown, this invocation may proceed
     }
@@ -187,7 +191,7 @@ private object AdaptiveThroughputSentry {
 
     private def nextThroughputRatio: Double = {
       val sr = successRatio
-      val next = if (sr < cb.targetSuccessRatio) {
+      val next = if (sr < ats.targetSuccessRatio) {
         // decrease throughput by current success ratio
         (sr * throughputRatio).max(0.0D)
       } else {

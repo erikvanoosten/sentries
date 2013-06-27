@@ -10,9 +10,10 @@
 
 package nl.grons.sentries.core
 
-import com.yammer.metrics.core.{MetricName, HealthCheck}
 import com.yammer.metrics.{Metrics, HealthChecks}
+import com.yammer.metrics.core.{MetricName, HealthCheck}
 import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
+import java.util.concurrent.TimeUnit
 import nl.grons.sentries.cross.Concurrent.Duration
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
@@ -23,16 +24,18 @@ import scala.util.control.ControlThrowable
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  */
 class CircuitBreakerSentry(
+  owner: Class[_],
   val resourceName: String,
   val failLimit: Int,
-  val retryDelay: Duration,
-  owner: Class[_]
+  val retryDelay: Duration
 ) extends ChainableSentry {
   import CircuitBreakerSentry._
 
   val sentryType = "failLimit"
 
   private[this] val state = new AtomicReference[State](new FlowState(this))
+  private[this] val allCallsMeter = Metrics.newMeter(owner, constructName("all"), "invocation", TimeUnit.SECONDS)
+  private val blockedCallsMeter = Metrics.newMeter(owner, constructName("blocked"), "invocation", TimeUnit.SECONDS)
 
   HealthChecks.register(new HealthCheck(new MetricName(owner, constructName()).getMBeanName) {
     def check() = state.get match {
@@ -49,6 +52,7 @@ class CircuitBreakerSentry(
     })
 
   def apply[T](r: => T): T = {
+    allCallsMeter.mark()
     state.get.preInvoke()
     try {
       val ret = r
@@ -135,9 +139,11 @@ private object CircuitBreakerSentry {
 
     def preInvoke() {
       val retry = System.currentTimeMillis > retryAt
-      if (!(retry && cb.attemptResetBrokenState(this)))
+      if (!(retry && cb.attemptResetBrokenState(this))) {
+        cb.blockedCallsMeter.mark()
         throw new CircuitBreakerBrokenException(
           cb.resourceName, "Making " + cb.resourceName + " unavailable after " + cb.failLimit + " errors")
+      }
       // If no exception is thrown, a retry is started.
     }
 

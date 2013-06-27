@@ -52,7 +52,7 @@ class ConcurrencyLimitSentryTest extends Specification {
   }
 
   private trait SentryContext extends Scope {
-    val sentry = new ConcurrencyLimitSentry("testSentry", 4, classOf[ConcurrencyLimitSentryTest])
+    val sentry = new ConcurrencyLimitSentry(classOf[ConcurrencyLimitSentryTest], "testSentry", 4)
 
     def slowCode = {
       Thread.sleep(300L)

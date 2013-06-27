@@ -134,9 +134,9 @@ class AdaptiveThroughputSentryTest extends Specification {
   private trait SentryContext extends Scope {
     val evaluationDelay: Long = 500L
     val sentry = new AdaptiveThroughputSentry(
+      classOf[AdaptiveThroughputSentryTest],
       "testSentry",
       0.8,
-      classOf[AdaptiveThroughputSentryTest],
       Duration(evaluationDelay, TimeUnit.MILLISECONDS)
     )
 
