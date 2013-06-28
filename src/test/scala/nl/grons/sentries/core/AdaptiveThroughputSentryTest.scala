@@ -97,7 +97,7 @@ class AdaptiveThroughputSentryTest extends Specification {
 
       // Run for 2 whole evaluation periods and a bit of the third.
       val start = System.currentTimeMillis()
-      val endAt = start + (evaluationDelay * 2.5D).toLong
+      val endAt = start + (evaluationDelay * 2.2D).toLong
       var resourceInvokedCount = 0
       var resourceInvocationBlockedCount = 0
       while (System.currentTimeMillis() < endAt) {
