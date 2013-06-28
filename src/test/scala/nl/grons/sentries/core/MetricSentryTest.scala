@@ -10,7 +10,7 @@
 
 package nl.grons.sentries.core
 
-import com.yammer.metrics.core.{Timer, MetricName}
+import com.yammer.metrics.core.{Meter, Timer, MetricName}
 import com.yammer.metrics.Metrics
 import nl.grons.sentries.support.{Sentry, NotAvailableException}
 import org.specs2.mutable.Specification
@@ -28,26 +28,30 @@ class MetricSentryTest extends Specification {
       sentry("test")("value") must_== "value"
     }
 
+    "rethrow exception" in new SentryContext {
+      sentry("test")(failing) must throwA[IllegalArgumentException]
+    }
+
     "detect success in Metrics timer 'all'" in new SentryContext {
-      sentry("success")(succeeding)
-      registeredTimer("success", "all").map(_.count()) must_== Some(1)
+      sentry("successResource")(succeeding)
+      registeredTimer("successResource", "all").map(_.count()) must_== Some(1)
     }
 
     "detect success by jumping out of closure in Metrics timer 'all'" in new SentryContext {
-      succeedingByBreakingOutOfClosure(sentry("success_2")) must_== "yes"
-      registeredTimer("success_2", "all").map(_.count()) must_== Some(1)
+      succeedingByBreakingOutOfClosure(sentry("success_2_Resource")) must_== "yes"
+      registeredTimer("success_2_Resource", "all").map(_.count()) must_== Some(1)
     }
 
     "detect failure in Metrics timer 'all' and meter 'fail'" in new SentryContext {
-      ignoring(classOf[IllegalArgumentException])(sentry("fail")(failing))
-      registeredTimer("fail", "all").map(_.count()) must_== Some(1)
-      registeredTimer("fail", "fail").map(_.count()) must_== Some(1)
+      ignoring(classOf[IllegalArgumentException])(sentry("failingResource")(failing))
+      registeredTimer("failingResource", "all").map(_.count()) must_== Some(1)
+      registeredMeter("failingResource", "fail").map(_.count()) must_== Some(1)
     }
 
-    "detect non availability in Metrics timers 'all' and meter 'not available'" in new SentryContext {
-      ignoring(classOf[NotAvailableException])(sentry("notAvailable")(notAvailable))
-      registeredTimer("notAvailable", "all").map(_.count()) must_== Some(1)
-      registeredTimer("notAvailable", "notAvailable").map(_.count()) must_== Some(1)
+    "detect non availability in Metrics timer 'all' and meter 'not available'" in new SentryContext {
+      ignoring(classOf[NotAvailableException])(sentry("notAvailableResource")(notAvailable))
+      registeredTimer("notAvailableResource", "all").map(_.count()) must_== Some(1)
+      registeredMeter("notAvailableResource", "notAvailable").map(_.count()) must_== Some(1)
     }
   }
 
@@ -72,6 +76,10 @@ class MetricSentryTest extends Specification {
 
     def registeredTimer(resourceName: String, timerName: String): Option[Timer] = {
       Metrics.defaultRegistry().allMetrics().asScala.get(metricName(resourceName, timerName)).asInstanceOf[Option[Timer]]
+    }
+
+    def registeredMeter(resourceName: String, meterName: String): Option[Meter] = {
+      Metrics.defaultRegistry().allMetrics().asScala.get(metricName(resourceName, meterName)).asInstanceOf[Option[Meter]]
     }
 
     def metricName(resourceName: String, timerName: String): MetricName = {

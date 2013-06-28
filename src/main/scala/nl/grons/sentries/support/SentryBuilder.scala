@@ -60,10 +60,10 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * See [[nl.grons.sentries.core.CircuitBreakerSentry]] for more information.
    *
    * @param failLimit number of failure after which the flow will be broken
-   * @param retryDelay timeout for trying again
+   * @param retryDelay timeout for trying again, defaults to 1 second
    * @return a new sentry that applies a circuit breaker after the current sentry behavior
    */
-  def withFailLimit(failLimit: Int, retryDelay: Duration): ChainableSentry with SentryBuilder =
+  def withFailLimit(failLimit: Int, retryDelay: Duration = Duration(1, TimeUnit.SECONDS)): ChainableSentry with SentryBuilder =
     withSentry(new CircuitBreakerSentry(owner, resourceName, failLimit, retryDelay))
 
   /**
@@ -87,17 +87,22 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * See [[nl.grons.sentries.core.CircuitBreakerSentry]] and
    * [[nl.grons.sentries.core.AdaptiveThroughputSentry]] for more information.
    *
-   * @param failLimit number of failure after which the flow will be broken
-   * @param retryDelay timeout for trying again
-   * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to 0.95
+   * @param failLimit number of failure after which the flow will be broken by circuit breaker
+   * @param retryDelay timeout for trying again (> 5 milliseconds), defaults to 1 second
+   * @param targetSuccessRatio target success ratio for adaptive throughput, `0 < targetSuccessRatio < 1`, defaults to 0.95
    * @return a new sentry that applies adaptive throughput after a circuit breaker after the current sentry behavior
    */
   def withFailLimitAndAdaptiveThroughput(
     failLimit: Int,
-    retryDelay: Duration,
+    retryDelay: Duration = Duration(1, TimeUnit.SECONDS),
     targetSuccessRatio: Double = 0.95D
-  ): ChainableSentry with SentryBuilder =
-    withFailLimit(failLimit, retryDelay).withAdaptiveThroughput(targetSuccessRatio, retryDelay)
+  ): ChainableSentry with SentryBuilder = {
+    require(retryDelay.toMillis > 5, "retryDelay must be longer then 5 milliseconds")
+    // The adaptive throughput's delay is slightly shortened so that retries from circuit breaker coincide with
+    // retries in adaptive throughput sentry.
+    withFailLimit(failLimit, retryDelay).
+      withAdaptiveThroughput(targetSuccessRatio, retryDelay - Duration(5, TimeUnit.MILLISECONDS))
+  }
 
   /**
    * Append a concurrency limit sentry to the current sentry.

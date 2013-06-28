@@ -28,19 +28,23 @@ class TimerSentryTest extends Specification {
       sentry("test")("value") must_== "value"
     }
 
+    "rethrow exception" in new SentryContext {
+      sentry("test")(failing) must throwA[IllegalArgumentException]
+    }
+
     "detect success in Metrics timer 'all'" in new SentryContext {
-      sentry("success")(succeeding)
-      registeredTimer("success").map(_.count()) must_== Some(1)
+      sentry("successResource")(succeeding)
+      registeredTimer("successResource").map(_.count()) must_== Some(1)
     }
 
     "detect failure in Metrics timer 'all'" in new SentryContext {
-      ignoring(classOf[IllegalArgumentException])(sentry("fail")(failing))
-      registeredTimer("fail").map(_.count()) must_== Some(1)
+      ignoring(classOf[IllegalArgumentException])(sentry("failingResource")(failing))
+      registeredTimer("failingResource").map(_.count()) must_== Some(1)
     }
 
     "detect non availability in Metrics timer 'all'" in new SentryContext {
-      ignoring(classOf[NotAvailableException])(sentry("notAvailable")(notAvailable))
-      registeredTimer("notAvailable").map(_.count()) must_== Some(1)
+      ignoring(classOf[NotAvailableException])(sentry("notAvailableResource")(notAvailable))
+      registeredTimer("notAvailableResource").map(_.count()) must_== Some(1)
     }
   }
 

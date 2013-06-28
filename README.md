@@ -6,8 +6,8 @@ around calling resources like databases and remote services.
 Sentries provides known techniques such as the Circuit Breaker, rate limiting,
 load balancing (not yet stable), slow ramp up (todo) and retries (todo). You select
 what you need by composing several sentries in a new sentry, a sentry chain. By combining
-this with time measurements and JMX control, Sentries is the ideal wrapper
-for invoking databases, remote services, etc.
+this with metrics and JMX control, Sentries is the ideal wrapper for invoking databases,
+remote services, etc.
 
 Example usage:
 ```scala
@@ -33,7 +33,7 @@ See [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/gro
 
 SBT:
 ```
-libraryDependencies += "nl.grons" %% "sentries" % "0.6.2"
+libraryDependencies += "nl.grons" %% "sentries" % "0.7.0"
 ```
 
 Maven:
@@ -45,7 +45,7 @@ Maven:
 <dependency>
     <groupId>nl.grons</groupId>
     <artifactId>sentries_${scala.dep.version}</artifactId>
-    <version>0.5</version>
+    <version>0.7.0</version>
 </dependency>
 ```
 

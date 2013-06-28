@@ -12,7 +12,7 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.6.3-SNAPSHOT"
+version := "0.7.0"
 
 scalaVersion := "2.10.0"
 
@@ -43,6 +43,9 @@ libraryDependencies <++= (scalaVersion) { v: String =>
 }
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
+
+// Give tests lots of memory so that the time sensitive tests are not bitten by garbage collection.
+javaOptions += "-Xms256m -Xmx512m"
 
 // Running all tests in parallel gives too much contention.
 testOptions in Test += Tests.Argument("threadsNb", "2")

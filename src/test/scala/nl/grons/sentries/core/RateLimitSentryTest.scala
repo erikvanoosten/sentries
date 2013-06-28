@@ -70,13 +70,13 @@ class RateLimitSentryTest extends Specification {
 
         // Start all 10 tasks simultaneously:
         val futures = executor.invokeAll(tasks).asScala
-        futuresToOptions(futures).filter(_ == Some("fast")).size must_== 3
+        futuresToOptions(futures).count(_ == Some("fast")) must_== 3
 
         Thread.sleep(delay + 5L)
 
         // Once more:
         val futures2 = executor.invokeAll(tasks).asScala
-        futuresToOptions(futures2).filter(_ == Some("fast")).size must_== 3
+        futuresToOptions(futures2).count(_ == Some("fast")) must_== 3
 
       } finally {
         executor.shutdown()
