@@ -5,6 +5,7 @@ Sentries is an out-of-your way Scala library that will handle all the fault-hand
 Sentries is located at: `"nl.grons" %% "sentries" % "0.7.0"`
 
 * [Download (Sbt, Maven)](docs/download.md)
+* [Available sentries](docs/sentries.md)
 * [Testing support](docs/testing.md)
 * [Advanced sentry chaining](docs/chaining.md) TODO
 * [Sentries and Metrics](docs/metrics.md) TODO
@@ -33,7 +34,7 @@ class DoItAllService extends nl.grons.sentries.support.SentrySupport {
 }
 ```
 
-See [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/grons/sentries/examples/SentryExampleApp.scala) for a more elaborate example.
+See [Available sentries](docs/sentries.md) for more and [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/grons/sentries/examples/SentryExampleApp.scala) for a more elaborate example.
 
 ## JMX
 
