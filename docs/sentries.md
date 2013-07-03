@@ -3,6 +3,11 @@
 ## Metrics
 
 Implemented by [MetricSentry](src/main/scala/nl/grons/sentries/core/MetricSentry).
+Implemented by [MetricSentry](sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
+Implemented by [MetricSentry](erikvanoosten/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
+Implemented by [MetricSentry](/src/main/scala/nl/grons/sentries/core/MetricSentry).
+Implemented by [MetricSentry](/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
+Implemented by [MetricSentry](/erikvanoosten/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
 
 One timer and 2 meter metrics are registered: "all", "fail" and "notAvailable".
 
