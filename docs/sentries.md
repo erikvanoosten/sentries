@@ -2,12 +2,12 @@
 
 ## Metrics
 
-Implemented by [MetricSentry](src/main/scala/nl/grons/sentries/core/MetricSentry).
-Implemented by [MetricSentry](sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
-Implemented by [MetricSentry](erikvanoosten/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
-Implemented by [MetricSentry](/src/main/scala/nl/grons/sentries/core/MetricSentry).
-Implemented by [MetricSentry](/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
-Implemented by [MetricSentry](/erikvanoosten/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry).
+Implemented by [MetricSentry](src/main/scala/nl/grons/sentries/core/MetricSentry.scala).
+Implemented by [MetricSentry](sentries/src/main/scala/nl/grons/sentries/core/MetricSentry.scala).
+Implemented by [MetricSentry](erikvanoosten/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry.scala).
+Implemented by [MetricSentry](/src/main/scala/nl/grons/sentries/core/MetricSentry.scala).
+Implemented by [MetricSentry](/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry.scala).
+Implemented by [MetricSentry](/erikvanoosten/sentries/src/main/scala/nl/grons/sentries/core/MetricSentry.scala).
 
 One timer and 2 meter metrics are registered: "all", "fail" and "notAvailable".
 
@@ -19,28 +19,28 @@ To count the 'not available' invocations, this must be the first sentry in the c
 
 ## Timer
 
-Implemented by [TimerSentry](src/main/scala/nl/grons/sentries/core/TimerSentry).
+Implemented by [TimerSentry](src/main/scala/nl/grons/sentries/core/TimerSentry.scala).
 
 One timer is registered: "all". It is updated for each invocation. For more extensive measuring, use the Metrics sentry instead.
 
 ## Circuit Breaker (fail limiter)
 
-Implemented by [CircuitBreakerSentry](src/main/scala/nl/grons/sentries/core/CircuitBreakerSentry).
+Implemented by [CircuitBreakerSentry](src/main/scala/nl/grons/sentries/core/CircuitBreakerSentry.scala).
 
 ## Adaptive throughput
 
-Implemented by [AdaptiveThroughputSentry](src/main/scala/nl/grons/sentries/core/AdaptiveThroughputSentry).
+Implemented by [AdaptiveThroughputSentry](src/main/scala/nl/grons/sentries/core/AdaptiveThroughputSentry.scala).
 
 ## Concurrency limiter
 
-Implemented by [ConcurrencyLimitSentry](src/main/scala/nl/grons/sentries/core/ConcurrencyLimitSentry).
+Implemented by [ConcurrencyLimitSentry](src/main/scala/nl/grons/sentries/core/ConcurrencyLimitSentry.scala).
 
 ## Rate limiter
 
-Implemented by [RateLimitSentry](src/main/scala/nl/grons/sentries/core/RateLimitSentry).
+Implemented by [RateLimitSentry](src/main/scala/nl/grons/sentries/core/RateLimitSentry.scala).
 
 ## Duration limiter
 
-Implemented by [DurationLimitSentry](src/main/scala/nl/grons/sentries/core/DurationLimitSentry).
+Implemented by [DurationLimitSentry](src/main/scala/nl/grons/sentries/core/DurationLimitSentry.scala).
 
 WARNING: do NOT use this sentry when you invoke it from a `Future` or an `Actor`. For such circumstances you are MUCH better of with a timeout on the enclosing future or a timeout message within the actor. Reason: this sentry blocks the current thread while waiting on a future that executes the task. Blocking the current thread is an anti-pattern for futures and actors.
