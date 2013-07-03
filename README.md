@@ -3,7 +3,7 @@
 Sentries is an out-of-your way Scala library that will handle all the fault-handling
 around calling resources like databases and remote services.
 
-Please see the [Wiki][wiki] for more documentation.
+Please see the [Wiki](wiki) for more documentation.
 
 Sentries provides known techniques such as the Circuit Breaker, rate limiting,
 load balancing (not yet stable), slow ramp up (todo) and retries (todo). You select
