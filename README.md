@@ -5,7 +5,12 @@ around calling resources like databases and remote services.
 
 Sentries is located at: `"nl.grons" %% "sentries" % "0.7.0"`
 
-* [[Download (Sbt, Maven)|Download]]
+* [Download (Sbt, Maven)](wiki/Download)
+* [Download (Sbt, Maven)](sentries/wiki/Download)
+* [Download (Sbt, Maven)](erikvanoosten/sentries/wiki/Download)
+* [Download (Sbt, Maven)](/wiki/Download)
+* [Download (Sbt, Maven)](/sentries/wiki/Download)
+* [Download (Sbt, Maven)](/erikvanoosten/sentries/wiki/Download)
 * [[Testing support|Testing]]
 * [[Advanced sentry chaining]]
 * [[Sentries and Metrics]]
