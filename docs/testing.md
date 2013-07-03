@@ -13,7 +13,11 @@ The advantage is that there is not a lot of code however, it will fail when you 
 To run tests concurrently you will need to override the sentries registry for each instance of the service under test:
 
 ```scala
-  val serviceUnderTest = new DoItAllService {
+  trait FreshSentriesRegistry extends SentrySupport {
     override def sentryRegistry = new SentriesRegistry
   }
+```
+
+```scala
+  val serviceUnderTest = new DoItAllService with FreshSentriesRegistry
 ```
