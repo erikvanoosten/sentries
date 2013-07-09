@@ -28,7 +28,7 @@ twitterApiSentry { /* closure to invoke twitter API */ }
 
 When `twitterApiSentry` is invoked with a closure, the metrics sentry is executed first. The metrics sentry forwards the closure to the concurrency limiting sentry. The concurrency limiting sentry finally invokes the closure.
 
-![Execution order diagram](sentry-execution-order.png)
+![Execution order diagram](chaining-execution-order.png)
 
 ## Uniqueness
 
@@ -47,7 +47,7 @@ val sharedTriftSentry = sentry("thrift-all").withMetrics.withFailLimit(25)
 val methodASentry = sharedTriftSentry.withSentry(sentry("thrift-a").withTimer)
 val methodBSentry = sharedTriftSentry.withSentry(sentry("thrift-b").withTimer)
 
-// False sharing of sentry. DON'T DO THIS!
+// False sharing of timer sentry. DON'T DO THIS!
 // val methodASentry_wrong = sharedTriftSentry.withTimer
 // val methodBSentry_wrong = sharedTriftSentry.withTimer
 
