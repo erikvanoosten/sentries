@@ -7,7 +7,7 @@ Sentries is located at: `"nl.grons" %% "sentries" % "0.7.1"`
 * [Download (Sbt, Maven)](docs/download.md)
 * [Available sentries](docs/sentries.md)
 * [Testing support](docs/testing.md)
-* [Advanced sentry chaining](docs/chaining.md) TODO
+* [Advanced sentry chaining](docs/chaining.md)
 * [Sentries and Metrics](docs/metrics.md) TODO
 * [Writing you own Sentry](docs/writing-sentries.md) TODO
 * [Developing sentries](docs/developing-sentries.md)
