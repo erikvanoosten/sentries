@@ -73,7 +73,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to 0.95
    * @param evaluationDelay the time between calculations of the current throughput, defaults to 1 second
    * @param minimumInvocationCountThreshold the minimum number of invocations that must be observed per `evaluationDelay`
-   *   before invocations are throttled, defaults to `0`
+   *   before invocations are throttled, defaults to `0` (>=0)
    * @param successIncreaseFactor factor to apply to current throughput ratio, `successIncreaseFactor > 1`, defaults to 1.2D
    * @return a new sentry that adaptively changes allowed throughput after the current sentry behavior
    */
