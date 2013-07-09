@@ -65,6 +65,25 @@ class AdaptiveThroughputSentryTest extends Specification {
       sentry.throughputRatio must_== 1.0D
     }
 
+    "not reduce throughput with less invocations then lower-limit" in new SentryContext {
+      override val sentry = new AdaptiveThroughputSentry(
+        classOf[AdaptiveThroughputSentryTest],
+        "testSentry",
+        targetSuccessRatio = 0.8,
+        evaluationDelay = Duration(evaluationDelay, TimeUnit.MILLISECONDS),
+        minimumInvocationCountThreshold = 10
+      )
+
+      for (i <- 1 to 10) {
+        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+      }
+      Thread.sleep(evaluationDelay)
+      for (i <- 1 to 10) {
+        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+      }
+      sentry(fastCode) must not(throwA[ReducedThroughputException])
+    }
+
     "reduce throughput after success ratio dropped below target" in new SentryContext {
       // 3 in 10 throw an exception -> fail ratio is below target fail ratio
       trip(3)

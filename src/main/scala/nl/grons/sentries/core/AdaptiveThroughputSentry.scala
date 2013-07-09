@@ -38,6 +38,10 @@ import scala.util.control.ControlThrowable
  * may proceed).
  * Note that regardless of the `currentThroughputRatio`, at least 1 call per evaluation period is allowed to continue.
  *
+ * This sentry only makes sense for high volume resources. To prevent throttling in low volume times, it is possible
+ * to set the minimum number of invocations that must be observed per `evaluationDelay` before throttling takes place.
+ * (see the `minimumInvocationCountThreshold` parameter).
+ *
  * When there is a calamity, this sentry only reacts as fast as the given `evaluationDelay` (1 second by default).
  * When the resource becomes fully available, it takes at most 39 evaluation before throughput is back at 100%.
  * You can test this by evaluating the following code in a Scala REPL:
@@ -55,6 +59,8 @@ import scala.util.control.ControlThrowable
  * @param resourceName name of the resource
  * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to `0.95D`
  * @param evaluationDelay the time between calculations of the current throughput, defaults to 1 second
+ * @param minimumInvocationCountThreshold the minimum number of invocations that must be observed per `evaluationDelay`
+ *   before invocations are throttled, defaults to `0` (>=0)
  * @param successIncreaseFactor factor to apply to current throughput ratio, `successIncreaseFactor > 1`, defaults to 1.2D
  */
 class AdaptiveThroughputSentry(
@@ -62,12 +68,14 @@ class AdaptiveThroughputSentry(
   val resourceName: String,
   val targetSuccessRatio: Double = 0.95D,
   val evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
+  val minimumInvocationCountThreshold: Int = 0,
   successIncreaseFactor: Double = 1.2D
 ) extends ChainableSentry {
   import AdaptiveThroughputSentry._
 
   require(targetSuccessRatio > 0 && targetSuccessRatio < 1, "0 < targetSuccessRatio < 1 but is " + targetSuccessRatio)
   require(successIncreaseFactor > 1.0, "successIncreaseFactor > 1 but is " + successIncreaseFactor)
+  require(minimumInvocationCountThreshold >= 0, "minimumInvocationCountThreshold >= 0 but is " + minimumInvocationCountThreshold)
 
   val sentryType = "failRatioLimit"
 
@@ -177,7 +185,7 @@ private object AdaptiveThroughputSentry {
 
     def successRatio: Double = {
       val cc = callCount.doubleValue()
-      if (cc == 0.0)
+      if (cc <= ats.minimumInvocationCountThreshold)
         // Prevent divide by zero
         1.0D
       else

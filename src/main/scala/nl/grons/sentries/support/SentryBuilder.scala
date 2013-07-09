@@ -72,22 +72,26 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    *
    * @param targetSuccessRatio target success ratio, `0 < targetSuccessRatio < 1`, defaults to 0.95
    * @param evaluationDelay the time between calculations of the current throughput, defaults to 1 second
+   * @param minimumInvocationCountThreshold the minimum number of invocations that must be observed per `evaluationDelay`
+   *   before invocations are throttled, defaults to `0`
    * @param successIncreaseFactor factor to apply to current throughput ratio, `successIncreaseFactor > 1`, defaults to 1.2D
    * @return a new sentry that adaptively changes allowed throughput after the current sentry behavior
    */
   def withAdaptiveThroughput(
       targetSuccessRatio: Double = 0.95D,
       evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
+      minimumInvocationCountThreshold: Int = 0,
       successIncreaseFactor: Double = 1.2D
   ): ChainableSentry with SentryBuilder =
-    withSentry(new AdaptiveThroughputSentry(owner, resourceName, targetSuccessRatio, evaluationDelay, successIncreaseFactor))
+    withSentry(new AdaptiveThroughputSentry(owner, resourceName, targetSuccessRatio, evaluationDelay, minimumInvocationCountThreshold, successIncreaseFactor))
 
   /**
    * Append a circuit breaker AND an adaptive throughput sentry to the current sentry.
    * See [[nl.grons.sentries.core.CircuitBreakerSentry]] and
    * [[nl.grons.sentries.core.AdaptiveThroughputSentry]] for more information.
    *
-   * @param failLimit number of failure after which the flow will be broken by circuit breaker
+   * @param failLimit number of failure after which the flow will be broken by circuit breaker, AND the minimum
+   *   number of invocations before throttling takes place in the adaptive throughput
    * @param retryDelay timeout for trying again (> 5 milliseconds), defaults to 1 second
    * @param targetSuccessRatio target success ratio for adaptive throughput, `0 < targetSuccessRatio < 1`, defaults to 0.95
    * @return a new sentry that applies adaptive throughput after a circuit breaker after the current sentry behavior
@@ -101,7 +105,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
     // The adaptive throughput's delay is slightly shortened so that retries from circuit breaker coincide with
     // retries in adaptive throughput sentry.
     withFailLimit(failLimit, retryDelay).
-      withAdaptiveThroughput(targetSuccessRatio, retryDelay - Duration(5, TimeUnit.MILLISECONDS))
+      withAdaptiveThroughput(targetSuccessRatio, retryDelay - Duration(5, TimeUnit.MILLISECONDS), failLimit)
   }
 
   /**
