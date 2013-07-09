@@ -45,7 +45,8 @@ libraryDependencies <++= (scalaVersion) { v: String =>
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
 // Give tests lots of memory so that the time sensitive tests are not bitten by garbage collection.
-javaOptions += "-Xms256m -Xmx512m"
+// Prevent icons in the dock on Mountain Lion with the headless option.
+javaOptions += "-Xms256m -Xmx512m -Djava.awt.headless=true"
 
 // Running all tests in parallel gives too much contention.
 testOptions in Test += Tests.Argument("threadsNb", "2")
