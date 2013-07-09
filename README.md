@@ -2,6 +2,8 @@
 
 Sentries is an out-of-your way Scala library that will handle all the fault-handling around calling resources like databases and remote services.
 
+> **sentry** (*pl.* **sentries**) a soldier stationed to keep guard or to control access to a place.
+
 Sentries is located at: `"nl.grons" %% "sentries" % "0.7.0"`
 
 * [Download (Sbt, Maven)](docs/download.md)
