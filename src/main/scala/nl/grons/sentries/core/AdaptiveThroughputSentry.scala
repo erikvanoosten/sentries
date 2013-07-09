@@ -185,8 +185,10 @@ private object AdaptiveThroughputSentry {
 
     def successRatio: Double = {
       val cc = callCount.doubleValue()
-      if (cc <= ats.minimumInvocationCountThreshold)
-        // Prevent divide by zero
+      if (cc == 0.0)
+        // Don't do anything when there were no invocations. This also prevents divide by zero errors.
+        Double.NaN
+      else if (cc <= ats.minimumInvocationCountThreshold)
         1.0D
       else
         // Due to concurrency, the calculation might result in values below 0 or above 1. The min/max compensate.
@@ -195,11 +197,14 @@ private object AdaptiveThroughputSentry {
 
     private def nextThroughputRatio: Double = {
       val sr = successRatio
-      val next = if (sr < ats.targetSuccessRatio) {
-        // decrease throughput by current success ratio
+      val next = if (sr.isNaN) {
+        // Don't change throughput ratio.
+        throughputRatio
+      } else if (sr < ats.targetSuccessRatio) {
+        // Decrease throughput by current success ratio.
         (sr * throughputRatio).max(0.0D)
       } else {
-        // increase throughput with 20% (to at least 0.001)
+        // Increase throughput with 20% (to at least 0.001).
         (1.2D * throughputRatio).max(0.001D)
       }
       next.min(1.0D)

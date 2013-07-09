@@ -110,6 +110,17 @@ class AdaptiveThroughputSentryTest extends Specification {
       sentry.throughputRatio must_== 1.2D * 0.7D
     }
 
+    "not increase throughput when no invocations seen" in new SentryContext {
+      sentry.trip()
+      sentry.throughputRatio must_== 0D
+
+      Thread.sleep(evaluationDelay + 5)
+
+      // 1 invocation to trigger next evaluation
+      sentry(fastCode) must not(throwA[ReducedThroughputException])
+      sentry.throughputRatio must_== 0D
+    }
+
     "allow access to resource once every evaluation period even when throughput is 0" in new SentryContext {
       // Set throughput to 0. Next evaluation is in evaluationDelay millis.
       sentry.trip()
