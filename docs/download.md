@@ -4,7 +4,7 @@ Sentries is build for scala 2.9.1, 2.9.1-1, 2.9.2, 2.9.3 and 2.10. Akka is not n
 
 ## SBT
 ```
-libraryDependencies += "nl.grons" %% "sentries" % "0.7.0"
+libraryDependencies += "nl.grons" %% "sentries" % "0.7.1"
 ```
 
 ## Maven
@@ -16,7 +16,7 @@ libraryDependencies += "nl.grons" %% "sentries" % "0.7.0"
 <dependency>
     <groupId>nl.grons</groupId>
     <artifactId>sentries_${scala.dep.version}</artifactId>
-    <version>0.7.0</version>
+    <version>0.7.1</version>
 </dependency>
 ```
 
