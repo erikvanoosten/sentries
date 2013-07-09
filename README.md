@@ -2,7 +2,7 @@
 
 Sentries is an out-of-your way Scala library that will handle all the fault-handling around calling resources like databases and remote services.
 
-Sentries is located at: `"nl.grons" %% "sentries" % "0.7.0"`
+Sentries is located at: `"nl.grons" %% "sentries" % "0.7.1"`
 
 * [Download (Sbt, Maven)](docs/download.md)
 * [Available sentries](docs/sentries.md)
