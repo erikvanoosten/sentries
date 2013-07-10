@@ -78,7 +78,7 @@ A sentry that limits the number of invocations per time span.
 Implemented by [RateLimitSentry](/src/main/scala/nl/grons/sentries/core/RateLimitSentry.scala).
 
 
-A rate limiter is useful for cases where you asynchronously hand of some work and you don't want to overload the receiver. For example sending error emails or a rendering job for which there is a limited capacity.
+A rate limiter is useful for cases where you asynchronously hand of some work and you don't want to overload the receiver. For example sending error emails or an asynchronous rendering job for which there is a limited capacity.
 For other cases a concurrency limiter is usually more appropriate.
 
 ## Duration limiter
