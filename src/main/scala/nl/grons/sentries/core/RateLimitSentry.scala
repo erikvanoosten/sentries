@@ -21,8 +21,8 @@ import nl.grons.sentries.support.MetricsSupport._
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  *
  * A rate limiter is useful for cases where you asynchronously hand of some work and you
- * don't want to overload the receiver. For example sending error emails or a rendering
- * job for which there is a limited capacity.
+ * don't want to overload the receiver. For example sending error emails or an
+ * asynchronous rendering job for which there is a limited capacity.
  * For other cases a [[nl.grons.sentries.core.ConcurrencyLimitSentry]] is usually more
  * appropriate.
  */

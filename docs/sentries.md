@@ -5,6 +5,7 @@ Below are descriptions of sentries that are ready for production usage.
 ## Metrics
 
 A sentry that times invocations and meters failures.
+
 Implemented by [MetricSentry](/src/main/scala/nl/grons/sentries/core/MetricSentry.scala).
 
 One timer and 2 meter metrics are registered: "all", "fail" and "notAvailable".
@@ -18,6 +19,7 @@ To count the 'not available' invocations, this must be the first sentry in the c
 ## Timer
 
 A sentry that times invocations.
+
 Implemented by [TimerSentry](/src/main/scala/nl/grons/sentries/core/TimerSentry.scala).
 
 One timer is registered: "all". It is updated for each invocation. For more extensive measuring, use the Metrics sentry instead.
@@ -25,6 +27,7 @@ One timer is registered: "all". It is updated for each invocation. For more exte
 ## Circuit Breaker (fail limiter)
 
 A sentry that limits the number of consecutive failures; a.k.a. a circuit breaker.
+
 Implemented by [CircuitBreakerSentry](/src/main/scala/nl/grons/sentries/core/CircuitBreakerSentry.scala).
 
 The goal of a circuit breaker is to protect the caller from a resource that fails. It also protects the resource from overload when it is trying to recover. A circuit breaker works by keeping track of the number of consecutive failures. When there are more then consecutive `failLimit` failures, the circuit breaker 'breaks' and pro-actively blocks all following calls by throwing a [CircuitBreakerBrokenException](/src/main/scala/nl/grons/sentries/core/CircuitBreakerBrokenException.scala).
@@ -36,6 +39,7 @@ Please see <http://day-to-day-stuff.blogspot.com/2013/02/breaking-circuit-breake
 ## Adaptive throughput
 
 A sentry that adapts throughput with the success ratio of invoking the protected resource. Think of it as a gradual circuit breaker.
+
 Implemented by [AdaptiveThroughputSentry](/src/main/scala/nl/grons/sentries/core/AdaptiveThroughputSentry.scala).
 
 The goal of this sentry is to protect the caller from a resource that slows down, or starts to produce errors when overloaded. By reducing throughput until success ratio is at an expected level, the resource can recover and work at its optimal efficiency.
@@ -62,6 +66,7 @@ res0 Int = 39
 ## Concurrency limiter
 
 A sentry that limits the number of concurrent invocations.
+
 Implemented by [ConcurrencyLimitSentry](/src/main/scala/nl/grons/sentries/core/ConcurrencyLimitSentry.scala).
 
 The goal of a concurrency limiter is to prevent overloading of a shared resource. This sentry can be used as an alternative to a pool for easy to crate objects.
@@ -69,15 +74,17 @@ The goal of a concurrency limiter is to prevent overloading of a shared resource
 ## Rate limiter
 
 A sentry that limits the number of invocations per time span.
+
 Implemented by [RateLimitSentry](/src/main/scala/nl/grons/sentries/core/RateLimitSentry.scala).
 
 
 A rate limiter is useful for cases where you asynchronously hand of some work and you don't want to overload the receiver. For example sending error emails or a rendering job for which there is a limited capacity.
-For other cases a [[nl.grons.sentries.core.ConcurrencyLimitSentry]] is usually more appropriate.
+For other cases a concurrency limiter is usually more appropriate.
 
 ## Duration limiter
 
 A sentry that limits the duration of an invocation.
+
 Implemented by [DurationLimitSentry](/src/main/scala/nl/grons/sentries/core/DurationLimitSentry.scala).
 
 The goal of a duration limiter is to support callers that are only interested in the results for a limited time.
