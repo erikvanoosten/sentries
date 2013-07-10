@@ -20,9 +20,11 @@ import nl.grons.sentries.support.MetricsSupport._
  * A sentry that limits the number of invocations per time span.
  * A new instance can be obtained through the [[nl.grons.sentries.SentrySupport]] mixin.
  *
- * A rate limiter is useful in a small amount of cases where a resource can only
- * handle a limited number of events per second. Note that a
- * [[nl.grons.sentries.core.ConcurrencyLimitSentry]] is usually more appropriate.
+ * A rate limiter is useful for cases where you asynchronously hand of some work and you
+ * don't want to overload the receiver. For example sending error emails or a rendering
+ * job for which there is a limited capacity.
+ * For other cases a [[nl.grons.sentries.core.ConcurrencyLimitSentry]] is usually more
+ * appropriate.
  */
 class RateLimitSentry(
   owner: Class[_],
