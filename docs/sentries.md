@@ -47,7 +47,7 @@ The goal of this sentry is to protect the caller from a resource that slows down
 For resources that behave correct most of the time, the target success ratio can be set quite high, e.g. `0.95`. When exceptions are more 'normal', you may have to lower this parameter.
 
 The success ratio is calculated per `evaluationDelay` with a simple `1 - (fail count / success count)`.
-When the success ratio is below `targetSuccessRatio`, the throughput is reduced to `currentSuccessRatio * currentThroughputRatio`. When the success ratio is again equal to or above the target ratio, throughput is increased by `successIncreaseFactor` (defaults to +20%) with a minimum of 0.0001D (1 in thousand calls may proceed).
+When the success ratio is below `targetSuccessRatio`, the throughput is reduced to `currentSuccessRatio * currentThroughputRatio`. When the success ratio is again equal to or above the target ratio, throughput is increased by `successIncreaseFactor` (defaults to +20%) with a minimum of 0.001 (1 in thousand calls may proceed).
 Note that regardless of the `currentThroughputRatio`, at least 1 call per evaluation period is allowed to continue.
 
 This sentry only makes sense for high volume resources. To prevent throttling in low volume times, it is possible to set the minimum number of invocations that must be observed per `evaluationDelay` before throttling takes place. (See the `minimumInvocationCountThreshold` parameter).
