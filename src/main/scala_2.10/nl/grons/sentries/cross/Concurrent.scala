@@ -14,7 +14,7 @@ import java.util.concurrent.Executor
 
 /**
  * Defines type aliases and helpers for abstracting differences between scala versions.
- * This version is for Scala 2.10.x and uses the scala library for concurrency.
+ * This version is for Scala 2.10.x/2.11.x and uses the scala library for concurrency.
  */
 object Concurrent {
   type ExecutionContext = scala.concurrent.ExecutionContext

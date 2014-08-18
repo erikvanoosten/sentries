@@ -27,7 +27,7 @@ class SentryBuilderTest extends Specification {
     "build a sentry that executes tasks in correct order" in new BuilderContext {
       val s = sentry("test").withSentry(testSentry(1)).withSentry(testSentry(2))
       s(null)
-      executedTaskIds must contain(1, 2).only.inOrder
+      executedTaskIds must containTheSameElementsAs(Seq(1, 2))
     }
 
     "allow chaining sentries on a base sentry builder and execute tasks in correct order" in new BuilderContext {
@@ -35,19 +35,19 @@ class SentryBuilderTest extends Specification {
       val s1 = base.withSentry(testSentry(2)).withSentry(testSentry(3))
       val s2 = base.withSentry(testSentry(4)).withSentry(testSentry(5))
       s1(null)
-      executedTaskIds must contain(1, 2, 3).only.inOrder
+      executedTaskIds must containTheSameElementsAs(Seq(1, 2, 3))
 
       // reset:
       executedTaskIds = Seq[Int]()
       s2(null)
-      executedTaskIds must contain(1, 4, 5).only.inOrder
+      executedTaskIds must containTheSameElementsAs(Seq(1, 4, 5))
     }
 
     "allow embedding other chains and execute tasks in correct order" in new BuilderContext {
       val chain = sentry("chain").withSentry(testSentry(10)).withSentry(testSentry(11))
       val s = sentry("test").withSentry(testSentry(1)).withSentry(chain).withSentry(testSentry(2))
       s(null)
-      executedTaskIds must contain(1, 10, 11, 2).only.inOrder
+      executedTaskIds must containTheSameElementsAs(Seq(1, 10, 11, 2))
     }
 
     "add fail limit sentry" in { todo }
