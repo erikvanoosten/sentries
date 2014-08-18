@@ -23,8 +23,12 @@ Example usage:
 class DoItAllService extends nl.grons.sentries.support.SentrySupport {
 
   // withFailLimit == circuit breaker
-  val dbSentry = sentry("mysql:localhost:3366").withMetrics.withFailLimit(failLimit = 5, retryDelay = 500 milliseconds)
-  val twitterApiSentry = sentry("twitter").withMetrics.withConcurrencyLimit(3)
+  val dbSentry = sentry("mysql:localhost:3366").
+          withMetrics.
+          withFailLimit(failLimit = 5, retryDelay = 500 milliseconds)
+  val twitterApiSentry = sentry("twitter").
+          withMetrics.
+          withConcurrencyLimit(3)
 
   def loadTweetFromDb(id: Long): Tweet = dbSentry {
     database.load(id)
