@@ -1,6 +1,6 @@
 /*
  * Sentries
- * Copyright (c) 2012-2013 Erik van Oosten All rights reserved.
+ * Copyright (c) 2012-2014 Erik van Oosten All rights reserved.
  *
  * The primary distribution site is https://github.com/erikvanoosten/sentries
  *
