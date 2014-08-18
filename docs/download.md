@@ -7,7 +7,7 @@ Sentries is build for several scala versions.
     <tr>
       <td rowspan="2" valign="top">Sentries<br>version</td>
       <td rowspan="2" valign="top">Metrics<br>version</td>
-      <td colspan="2" rowspan="1" valign="top">Scala version</td>
+      <td colspan="3" valign="top">Scala version</td>
     </tr>
     <tr>
       <td valign="top">2.9.*</td>
