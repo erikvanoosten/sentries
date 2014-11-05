@@ -4,6 +4,8 @@ Sentries is an out-of-your way Scala library that will handle all the fault-hand
 
 Sentries is located at: `"nl.grons" %% "sentries" % "0.8.0"`
 
+*Documentation*
+
 * [Download (Sbt, Maven)](docs/download.md)
 * [Available sentries](docs/sentries.md)
 * [Testing support](docs/testing.md)
