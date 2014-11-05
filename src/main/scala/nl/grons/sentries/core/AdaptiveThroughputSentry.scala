@@ -14,9 +14,10 @@ import com.yammer.metrics.core.{MetricName, HealthCheck}
 import com.yammer.metrics.{Metrics, HealthChecks}
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.Duration
 import nl.grons.sentries.support.{LongAdder, NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
+import scala.concurrent.duration.Duration
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.forkjoin.ThreadLocalRandom
 import scala.util.control.ControlThrowable
 
@@ -42,6 +43,12 @@ import scala.util.control.ControlThrowable
  * to set the minimum number of invocations that must be observed per `evaluationDelay` before throttling takes place.
  * (see the `minimumInvocationCountThreshold` parameter).
  *
+ * It does not make sense to throttle on fast failing invocations. In those cases its better to get the exception
+ * from the underlying resource then to get a [[ReducedThroughputException]]. Parameter `failedInvocationDurationThreshold`
+ * sets the minimum duration of failed invocation in order for those invocations to be counted as failed. By setting
+ * this value to a non-zero value, fast failures do not reduce throughput. (Note that the default is `0` for backward
+ * compatibility.)
+ *
  * When there is a calamity, this sentry only reacts as fast as the given `evaluationDelay` (1 second by default).
  * When the resource becomes fully available, it takes at most 39 evaluation before throughput is back at 100%.
  * You can test this by evaluating the following code in a Scala REPL:
@@ -62,6 +69,9 @@ import scala.util.control.ControlThrowable
  * @param minimumInvocationCountThreshold the minimum number of invocations that must be observed per `evaluationDelay`
  *   before invocations are throttled, defaults to `0` (>=0)
  * @param successIncreaseFactor factor to apply to current throughput ratio, `successIncreaseFactor > 1`, defaults to 1.2D
+ * @param failedInvocationDurationThreshold the minimum duration for a failed invocation to be counted as failed,
+ *   for backward compatibility this defaults to 0 milliseconds. A better default would be a small number,
+ *   e.g. `1 millisecond`.
  */
 class AdaptiveThroughputSentry(
   owner: Class[_],
@@ -69,7 +79,8 @@ class AdaptiveThroughputSentry(
   val targetSuccessRatio: Double = 0.95D,
   val evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
   val minimumInvocationCountThreshold: Int = 0,
-  successIncreaseFactor: Double = 1.2D
+  successIncreaseFactor: Double = 1.2D,
+  val failedInvocationDurationThreshold: FiniteDuration = Duration(0, TimeUnit.MILLISECONDS)
 ) extends ChainableSentry {
   import AdaptiveThroughputSentry._
 
@@ -80,6 +91,7 @@ class AdaptiveThroughputSentry(
   val sentryType = "failRatioLimit"
 
   private[this] val state = new AtomicReference[State](new State(this, 1.0D))
+  private[this] val failedInvocationDurationThresholdNanos = failedInvocationDurationThreshold.toNanos
 
   HealthChecks.register(new HealthCheck(new MetricName(owner, constructName()).getMBeanName) {
     def check() = {
@@ -94,6 +106,7 @@ class AdaptiveThroughputSentry(
 
   def apply[T](r: => T): T = {
     state.get.preInvoke()
+    val start = System.nanoTime()
     try {
       val ret = r
       state.get.postInvoke()
@@ -107,10 +120,11 @@ class AdaptiveThroughputSentry(
         // Used by Scala for control, it is equivalent to success
         state.get.postInvoke()
         throw e
-      case e: Throwable => {
-        state.get.onThrowable(e)
+      case e: Throwable =>
+        // Fast failures are not interesting to block, do not update state.
+        val duration = System.nanoTime() - start
+        if (duration >= failedInvocationDurationThresholdNanos) state.get.onThrowable(e)
         throw e
-      }
     }
   }
 

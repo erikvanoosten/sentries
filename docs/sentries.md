@@ -52,6 +52,8 @@ Note that regardless of the `currentThroughputRatio`, at least 1 call per evalua
 
 This sentry only makes sense for high volume resources. To prevent throttling in low volume times, it is possible to set the minimum number of invocations that must be observed per `evaluationDelay` before throttling takes place. (See the `minimumInvocationCountThreshold` parameter).
 
+It does not make sense to throttle on fast failing invocations. In those cases its better to get the exception from the underlying resource then to get a `ReducedThroughputException`. Parameter `failedInvocationDurationThreshold` (introduced in version 0.8.0) sets the minimum duration of failed invocation in order for those invocations to be counted as failed. By setting this value to a non-zero value, fast failures do not reduce throughput. (Note that the default is `0` for backward compatibility.)
+
 When there is a calamity, this sentry only reacts as fast as the given `evaluationDelay` (1 second by default).
 When the resource becomes fully available, it takes at most 39 evaluation before throughput is back at 100%. You can test this by evaluating the following code in a Scala REPL:
 

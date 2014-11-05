@@ -12,7 +12,7 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.7.2"
+version := "0.8.0"
 
 crossVersion := CrossVersion.binary
 
@@ -29,11 +29,15 @@ resolvers ++= Seq(
   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 )
 
-libraryDependencies <++= (scalaVersion) { v: String =>
-  Seq("com.yammer.metrics" % "metrics-core" % "2.2.0", "org.slf4j" % "slf4j-api" % "1.7.5") ++ (
-      if (v.startsWith("2.11"))      Seq("org.specs2" %% "specs2" % "2.3.11" % "test")
-      else if (v.startsWith("2.10")) Seq("org.specs2" %% "specs2" % "1.13" % "test")
-      else sys.error("Not supported scala version: " + v))
+libraryDependencies <++= (scalaVersion) { sv: String =>
+  Seq(
+    "com.yammer.metrics" % "metrics-core" % "2.2.0",
+    "org.slf4j" % "slf4j-api" % "1.7.5"
+  ) ++ (
+    if (sv.startsWith("2.11"))      Seq("org.specs2" %% "specs2" % "2.3.11" % "test")
+    else if (sv.startsWith("2.10")) Seq("org.specs2" %% "specs2" % "1.13" % "test")
+    else sys.error("Not supported scala version: " + sv)
+  )
 }
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")

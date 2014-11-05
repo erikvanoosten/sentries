@@ -30,7 +30,7 @@ class AdaptiveThroughputSentryTest extends Specification {
 
     "rethrow exceptions" in new SentryContext {
       for (i <- 1 to 10) {
-        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+        sentry(throwAnIllegalArgumentException(2)) must throwA[IllegalArgumentException]
       }
     }
 
@@ -38,7 +38,7 @@ class AdaptiveThroughputSentryTest extends Specification {
       sentry.trip()
       sentry(fastCode) must throwA[ReducedThroughputException]
       sentry.trip()
-      sentry(throwAnIllegalArgumentException) must throwA[ReducedThroughputException]
+      sentry(throwAnIllegalArgumentException(2)) must throwA[ReducedThroughputException]
       sentry.trip()
       sentry(throwANotAvailableException) must throwA[ReducedThroughputException]
       sentry.trip()
@@ -66,20 +66,42 @@ class AdaptiveThroughputSentryTest extends Specification {
     }
 
     "not reduce throughput with less invocations then lower-limit" in new SentryContext {
+      override val evaluationDelay = 500L
       override val sentry = new AdaptiveThroughputSentry(
         classOf[AdaptiveThroughputSentryTest],
         "testSentry",
         targetSuccessRatio = 0.8,
         evaluationDelay = Duration(evaluationDelay, TimeUnit.MILLISECONDS),
-        minimumInvocationCountThreshold = 10
+        minimumInvocationCountThreshold = 10,
+        failedInvocationDurationThreshold = Duration(0, TimeUnit.MILLISECONDS)
       )
 
       for (i <- 1 to 10) {
-        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+        sentry(throwAFastIllegalArgumentException) must throwA[IllegalArgumentException]
       }
       Thread.sleep(evaluationDelay)
       for (i <- 1 to 10) {
-        sentry(throwAnIllegalArgumentException) must throwA[IllegalArgumentException]
+        sentry(throwAFastIllegalArgumentException) must throwA[IllegalArgumentException]
+      }
+      sentry(fastCode) must not(throwA[ReducedThroughputException])
+    }
+
+    "not reduce throughput with failing invocations faster then threshold" in new SentryContext {
+      override val evaluationDelay = 500L
+      override val sentry = new AdaptiveThroughputSentry(
+        classOf[AdaptiveThroughputSentryTest],
+        "testSentry",
+        targetSuccessRatio = 0.8,
+        evaluationDelay = Duration(evaluationDelay, TimeUnit.MILLISECONDS),
+        failedInvocationDurationThreshold = Duration(10, TimeUnit.MILLISECONDS)
+      )
+
+      for (i <- 1 to 10) {
+        sentry(throwAFastIllegalArgumentException) must throwA[IllegalArgumentException]
+      }
+      Thread.sleep(evaluationDelay)
+      for (i <- 1 to 10) {
+        sentry(throwAFastIllegalArgumentException) must throwA[IllegalArgumentException]
       }
       sentry(fastCode) must not(throwA[ReducedThroughputException])
     }
@@ -94,7 +116,7 @@ class AdaptiveThroughputSentryTest extends Specification {
       // Note: we must let all invocations fail, as only 30% of all calls are let through, there exists
       // the chance that not enough of our failures are invoked.
       trip(10, 1)
-      // Throughput must be reduced further (close to 0, we only 1 succeeding attempt at the end of trip()).
+      // Throughput must be reduced further (close to 0, we only have 1 succeeding attempt at the end of trip()).
       sentry.throughputRatio must beCloseTo(0.0D, 0.1D)
     }
 
@@ -122,7 +144,7 @@ class AdaptiveThroughputSentryTest extends Specification {
     }
 
     "allow access to resource once every evaluation period even when throughput is 0" in new SentryContext {
-      // Set throughput to 0. Next evaluation is in `evaluationDelay` millis.
+      // Set throughput to 0. Next evaluation is in `evaluationDelay`  millis.
       sentry.trip()
 
       // Run for 2 whole evaluation periods and a bit of the third.
@@ -131,7 +153,7 @@ class AdaptiveThroughputSentryTest extends Specification {
       var resourceInvokedCount = 0
       var resourceInvocationBlockedCount = 0
       while (System.currentTimeMillis() < endAt) {
-        try sentry(throwAnIllegalArgumentException)
+        try sentry(throwAnIllegalArgumentException(2))
         catch {
           case _: IllegalArgumentException => resourceInvokedCount += 1
           case _: ReducedThroughputException => resourceInvocationBlockedCount += 1
@@ -162,19 +184,20 @@ class AdaptiveThroughputSentryTest extends Specification {
   }
 
   private trait SentryContext extends Scope {
-    val evaluationDelay: Long = 500L
+    val evaluationDelay: Long = 2000L
     val sentry = new AdaptiveThroughputSentry(
       classOf[AdaptiveThroughputSentryTest],
       "testSentry",
       0.8,
-      Duration(evaluationDelay, TimeUnit.MILLISECONDS)
+      Duration(evaluationDelay, TimeUnit.MILLISECONDS),
+      failedInvocationDurationThreshold = Duration(500, TimeUnit.NANOSECONDS)
     )
 
     /**
      * Invoke the resource `1000 - skipSuccess` times, and then once more in the next state.
      * Of each 10 invocations, `failureCountPerTen` fail, the rest succeeds.
      */
-    def trip(failureCountPerTen: Int, skipSuccess: Int = 0, failure: => String = throwAnIllegalArgumentException) {
+    def trip(failureCountPerTen: Int, skipSuccess: Int = 0, failure: => String = throwAnIllegalArgumentException(1)) {
       require(failureCountPerTen >= 0 && failureCountPerTen <= 10 && skipSuccess >= 0)
       val start = System.currentTimeMillis()
       var successSkipped = 0
@@ -208,7 +231,12 @@ class AdaptiveThroughputSentryTest extends Specification {
       "no"
     }
 
-    def throwAnIllegalArgumentException: String = {
+    def throwAnIllegalArgumentException(delay: Long): String = {
+      Thread.sleep(delay)
+      throw new IllegalArgumentException("fail")
+    }
+
+    def throwAFastIllegalArgumentException: String = {
       throw new IllegalArgumentException("fail")
     }
 

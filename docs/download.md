@@ -21,6 +21,13 @@ Sentries is build for several scala versions.
       <td valign="top">✓</td>
       <td valign="top">✓</td>
     </tr>
+    <tr>
+      <td valign="top">0.8.0</td>
+      <td valign="top">2.2.0</td>
+      <td valign="top"></td>
+      <td valign="top">✓</td>
+      <td valign="top">✓</td>
+    </tr>
   </tbody>
 </table>
 
@@ -29,7 +36,7 @@ Scala version `2.9.*` refers to the following versions: `2.9.1`, `2.9.1-1`, `2.9
 
 ## SBT
 ```
-libraryDependencies += "nl.grons" %% "sentries" % "0.7.1"
+libraryDependencies += "nl.grons" %% "sentries" % "0.8.0"
 ```
 
 ## Maven
@@ -41,8 +48,15 @@ libraryDependencies += "nl.grons" %% "sentries" % "0.7.1"
 <dependency>
     <groupId>nl.grons</groupId>
     <artifactId>sentries_${scala.dep.version}</artifactId>
-    <version>0.7.1</version>
+    <version>0.8.0</version>
 </dependency>
 ```
 
-Note: For scala versions before 2.10, you need to use the full scala version; e.g. `metrics-scala_2.9.1-1`.
+## Changes
+
+### Version 0.8, November 2014
+
+* _NOT_ binary backward compatible. This version _is_ source compatible with 0.7.x.
+* Dropped scala 2.9 support.
+* Added parameter `failedInvocationDurationThreshold` to `AdaptiveThroughputSentry` in order to not reduce throughput on fast failures.
+  This features was introduced after a long discussion on a hack night of the [Amsterdam Scala group](http://www.meetup.com/amsterdam-scala/).
