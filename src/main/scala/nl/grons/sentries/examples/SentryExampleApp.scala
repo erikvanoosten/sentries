@@ -17,7 +17,7 @@ import nl.grons.sentries.SentrySupport
 import nl.grons.sentries.support._
 import scala.util.Random
 import nl.grons.sentries.core.LoadBalancer
-import nl.grons.sentries.cross.Concurrent.Duration
+import scala.concurrent.duration.Duration
 
 /**
  * Some runnable examples to show how to use sentries.

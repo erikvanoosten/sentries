@@ -11,10 +11,10 @@
 package nl.grons.sentries.core
 
 import java.util.concurrent.TimeUnit
+import nl.grons.sentries.support.{Sentry, NotAvailableException}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import nl.grons.sentries.support.{Sentry, NotAvailableException}
-import nl.grons.sentries.cross.Concurrent._
+import scala.concurrent.duration._
 
 /**
  * Tests [[nl.grons.sentries.core.AdaptiveThroughputSentry]].
@@ -122,7 +122,7 @@ class AdaptiveThroughputSentryTest extends Specification {
     }
 
     "allow access to resource once every evaluation period even when throughput is 0" in new SentryContext {
-      // Set throughput to 0. Next evaluation is in evaluationDelay millis.
+      // Set throughput to 0. Next evaluation is in `evaluationDelay` millis.
       sentry.trip()
 
       // Run for 2 whole evaluation periods and a bit of the third.
@@ -135,7 +135,7 @@ class AdaptiveThroughputSentryTest extends Specification {
         catch {
           case _: IllegalArgumentException => resourceInvokedCount += 1
           case _: ReducedThroughputException => resourceInvocationBlockedCount += 1
-          case _ => anError
+          case _: Throwable => anError
         }
         Thread.sleep(8L)
       }

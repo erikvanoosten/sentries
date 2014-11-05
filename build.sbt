@@ -12,22 +12,17 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.7.1"
-
-scalaVersion := "2.11.0"
-
-crossScalaVersions := Seq("2.10.0", "2.11.0")
+version := "0.7.2"
 
 crossVersion := CrossVersion.binary
 
-// The following prepends src/main/scala_2.9 or src/main/scala_2.10 to the compile path.
-unmanagedSourceDirectories in Compile <<= (unmanagedSourceDirectories in Compile, sourceDirectory in Compile, scalaVersion) { (sds: Seq[java.io.File], sd: java.io.File, v: String) =>
-  // Hard coded to use scala 2.10 pending removal of 2.9 support.
-  // val mainVersion = v.split("""\.""").take(2).mkString(".")
-  val mainVersion = "2.10"
-  val extra = new java.io.File(sd, "scala_" + mainVersion)
-  (if (extra.exists) Seq(extra) else Seq()) ++ sds
+description <<= scalaVersion { sv =>
+  "sentries for Scala " + sbt.cross.CrossVersionUtil.binaryScalaVersion(sv)
 }
+
+scalaVersion := "2.11.0"
+
+crossScalaVersions := Seq("2.10.4", "2.11.4")
 
 resolvers ++= Seq(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
@@ -38,10 +33,6 @@ libraryDependencies <++= (scalaVersion) { v: String =>
   Seq("com.yammer.metrics" % "metrics-core" % "2.2.0", "org.slf4j" % "slf4j-api" % "1.7.5") ++ (
       if (v.startsWith("2.11"))      Seq("org.specs2" %% "specs2" % "2.3.11" % "test")
       else if (v.startsWith("2.10")) Seq("org.specs2" %% "specs2" % "1.13" % "test")
-      else if (v == "2.9.3")         Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
-                                         "org.specs2" % "specs2_2.9.2" % "1.12.3" % "test")
-      else if (v.startsWith("2.9"))  Seq("com.typesafe.akka" % "akka-actor" % "2.0.5",
-                                         "org.specs2" %% "specs2" % "1.12.3" % "test")
       else sys.error("Not supported scala version: " + v))
 }
 

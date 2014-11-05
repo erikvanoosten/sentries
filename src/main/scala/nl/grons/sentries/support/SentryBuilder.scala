@@ -12,7 +12,7 @@ package nl.grons.sentries.support
 
 import java.util.concurrent.TimeUnit
 import nl.grons.sentries.core._
-import nl.grons.sentries.cross.Concurrent._
+import scala.concurrent.duration.Duration
 
 /**
  * Lots of code to make creating sentries trivially easy.

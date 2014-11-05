@@ -10,10 +10,10 @@
 
 package nl.grons.sentries.core
 
-import org.specs2.specification.Scope
+import java.util.concurrent.{TimeUnit, Executor}
 import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException}
-import nl.grons.sentries.cross.Concurrent._
-import java.util.concurrent.TimeUnit
+import org.specs2.specification.Scope
+import scala.concurrent.duration._
 
 /**
  * Tests [[nl.grons.sentries.core.DurationLimitSentry]].
@@ -54,6 +54,10 @@ class DurationLimitSentryTest extends org.specs2.mutable.Specification {
       throw new ExpectedException
     }
   }
+
+  private def nonLoggingExecutionContext(executor: Executor): scala.concurrent.ExecutionContext =
+    scala.concurrent.ExecutionContext.fromExecutor(executor, reporter = (_: Throwable) => ())
+
 }
 
 class ExpectedException extends Exception

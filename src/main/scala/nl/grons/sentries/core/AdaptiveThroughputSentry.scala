@@ -14,7 +14,7 @@ import com.yammer.metrics.core.{MetricName, HealthCheck}
 import com.yammer.metrics.{Metrics, HealthChecks}
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.TimeUnit
-import nl.grons.sentries.cross.Concurrent.Duration
+import scala.concurrent.duration.Duration
 import nl.grons.sentries.support.{LongAdder, NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
 import scala.concurrent.forkjoin.ThreadLocalRandom

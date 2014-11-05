@@ -10,9 +10,10 @@
 
 package nl.grons.sentries.core
 
-import nl.grons.sentries.cross.Concurrent._
 import java.util.concurrent.TimeoutException
 import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException, ChainableSentry}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Future, Await, ExecutionContext}
 
 /**
  * A sentry that limits the duration of an invocation.

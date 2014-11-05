@@ -12,7 +12,7 @@ package nl.grons.sentries.core
 
 import com.yammer.metrics.Metrics
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
-import nl.grons.sentries.cross.Concurrent.Duration
+import scala.concurrent.duration.Duration
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
 

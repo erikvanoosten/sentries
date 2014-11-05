@@ -12,8 +12,9 @@ package nl.grons.sentries.support
 
 import com.yammer.metrics.core.{Stoppable, MetricName}
 import java.util.concurrent.{Executors, CopyOnWriteArrayList}
+import scala.collection.concurrent.{Map => CMap}
+import scala.collection.concurrent.TrieMap.{empty => emptyCMap}
 import scala.collection.JavaConverters._
-import nl.grons.sentries.cross.Concurrent._
 
 /**
  * A registry of sentry instances.
@@ -117,12 +118,12 @@ class SentriesRegistry() {
     new MetricName(sentryOwner, name + "." + sentryType)
 
   /**
-   * Returns a new [[scala.collection.mutable.ConcurrentMap]] implementation. Subclass this to do weird things with
+   * Returns a new concurrent map implementation. Subclass this to do weird things with
    * your own [[nl.grons.sentries.support.SentriesRegistry]] implementation.
    *
-   * @return a new [[scala.collection.mutable.ConcurrentMap]]
+   * @return a new [[scala.collection.concurrent.Map]]
    */
-  protected def newSentriesMap(): CMap[MetricName, NamedSentry] = defaultConcurrentMap()
+  protected def newSentriesMap(): CMap[MetricName, NamedSentry] = emptyCMap
 
   /**
    * Gets any existing sentry with the given name or, if none exists, adds the given sentry.

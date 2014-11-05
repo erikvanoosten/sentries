@@ -11,10 +11,10 @@
 package nl.grons.sentries.core
 
 import java.util.concurrent._
-import nl.grons.sentries.cross.Concurrent.Duration
 import nl.grons.sentries.support.NotAvailableException
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
+import scala.concurrent.duration.Duration
 import scala.collection.JavaConverters._
 
 /**

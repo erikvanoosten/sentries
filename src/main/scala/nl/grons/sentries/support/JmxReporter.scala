@@ -15,8 +15,9 @@ import java.lang.management.ManagementFactory
 import javax.management.{MBeanRegistrationException, InstanceNotFoundException, ObjectName, MBeanServer}
 import nl.grons.sentries
 import nl.grons.sentries.SentrySupport
-import nl.grons.sentries.cross.Concurrent._
 import org.slf4j.LoggerFactory
+import scala.collection.concurrent.{Map => CMap}
+import scala.collection.concurrent.TrieMap.{empty => emptyCMap}
 
 /**
  * A reporter which exposes sentries as JMX MBeans.
@@ -59,12 +60,12 @@ class JmxReporter(
   }
 
   /**
-   * Returns a new ConcurrentMap implementation. Subclass this to do weird things with
+   * Returns a new concurrent map implementation. Subclass this to do weird things with
    * your own [[nl.grons.sentries.support.JmxReporter]] implementation.
    *
-   * @return a new ConcurrentMap
+   * @return a new [[scala.collection.concurrent.Map]]
    */
-  protected def newRegisteredBeansMap(): CMap[MetricName, ObjectName] = defaultConcurrentMap()
+  protected def newRegisteredBeansMap(): CMap[MetricName, ObjectName] = emptyCMap
 
   def shutdown() {
     sentryRegistry.removeListener(this)

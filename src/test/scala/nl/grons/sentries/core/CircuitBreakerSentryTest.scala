@@ -11,10 +11,10 @@
 package nl.grons.sentries.core
 
 import java.util.concurrent.TimeUnit
+import nl.grons.sentries.support.{Sentry, NotAvailableException}
 import org.specs2.mutable.Specification
 import org.specs2.specification.Scope
-import nl.grons.sentries.support.{Sentry, NotAvailableException}
-import nl.grons.sentries.cross.Concurrent.Duration
+import scala.concurrent.duration.Duration
 
 /**
  * Tests [[nl.grons.sentries.core.CircuitBreakerSentry]].
