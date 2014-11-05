@@ -12,7 +12,7 @@ package nl.grons.sentries.support
 
 import java.util.concurrent.TimeUnit
 import nl.grons.sentries.core._
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{FiniteDuration, Duration}
 
 /**
  * Lots of code to make creating sentries trivially easy.
@@ -63,7 +63,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param retryDelay timeout for trying again, defaults to 1 second
    * @return a new sentry that applies a circuit breaker after the current sentry behavior
    */
-  def withFailLimit(failLimit: Int, retryDelay: Duration = Duration(1, TimeUnit.SECONDS)): ChainableSentry with SentryBuilder =
+  def withFailLimit(failLimit: Int, retryDelay: FiniteDuration = Duration(1, TimeUnit.SECONDS)): ChainableSentry with SentryBuilder =
     withSentry(new CircuitBreakerSentry(owner, resourceName, failLimit, retryDelay))
 
   /**
@@ -75,20 +75,25 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param minimumInvocationCountThreshold the minimum number of invocations that must be observed per `evaluationDelay`
    *   before invocations are throttled, defaults to `0` (>=0)
    * @param successIncreaseFactor factor to apply to current throughput ratio, `successIncreaseFactor > 1`, defaults to 1.2D
+   * @param failedInvocationDurationThreshold the minimum duration for a failed invocation to be counted as failed,
+   *   defaults to 300 nanoseconds
    * @return a new sentry that adaptively changes allowed throughput after the current sentry behavior
    */
   def withAdaptiveThroughput(
       targetSuccessRatio: Double = 0.95D,
-      evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
+      evaluationDelay: FiniteDuration = Duration(1, TimeUnit.SECONDS),
       minimumInvocationCountThreshold: Int = 0,
-      successIncreaseFactor: Double = 1.2D
+      successIncreaseFactor: Double = 1.2D,
+      failedInvocationDurationThreshold: FiniteDuration = Duration(300, TimeUnit.NANOSECONDS)
   ): ChainableSentry with SentryBuilder =
-    withSentry(new AdaptiveThroughputSentry(owner, resourceName, targetSuccessRatio, evaluationDelay, minimumInvocationCountThreshold, successIncreaseFactor))
+    withSentry(new AdaptiveThroughputSentry(owner, resourceName, targetSuccessRatio, evaluationDelay, minimumInvocationCountThreshold, successIncreaseFactor, failedInvocationDurationThreshold))
 
   /**
    * Append a circuit breaker AND an adaptive throughput sentry to the current sentry.
    * See [[nl.grons.sentries.core.CircuitBreakerSentry]] and
    * [[nl.grons.sentries.core.AdaptiveThroughputSentry]] for more information.
+   *
+   * The `failedInvocationDurationThreshold` is set to 300 nanoseconds.
    *
    * @param failLimit number of failure after which the flow will be broken by circuit breaker, AND the minimum
    *   number of invocations before throttling takes place in the adaptive throughput
@@ -98,14 +103,15 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    */
   def withFailLimitAndAdaptiveThroughput(
     failLimit: Int,
-    retryDelay: Duration = Duration(1, TimeUnit.SECONDS),
+    retryDelay: FiniteDuration = Duration(1, TimeUnit.SECONDS),
     targetSuccessRatio: Double = 0.95D
   ): ChainableSentry with SentryBuilder = {
     require(retryDelay.toMillis > 5, "retryDelay must be longer then 5 milliseconds")
     // The adaptive throughput's delay is slightly shortened so that retries from circuit breaker coincide with
     // retries in adaptive throughput sentry.
     withFailLimit(failLimit, retryDelay).
-      withAdaptiveThroughput(targetSuccessRatio, retryDelay - Duration(5, TimeUnit.MILLISECONDS), failLimit)
+      withAdaptiveThroughput(targetSuccessRatio, retryDelay - Duration(5, TimeUnit.MILLISECONDS), failLimit,
+                             failedInvocationDurationThreshold = Duration(300, TimeUnit.NANOSECONDS))
   }
 
   /**
@@ -124,7 +130,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param per the time unit
    * @return a new sentry that applies a concurrency limit after the current sentry behavior
    */
-  def withRateLimit(rate: Int, per: Duration): ChainableSentry with SentryBuilder =
+  def withRateLimit(rate: Int, per: FiniteDuration): ChainableSentry with SentryBuilder =
     withSentry(new RateLimitSentry(owner, resourceName, rate, per))
 
   /**
@@ -139,7 +145,7 @@ abstract class SentryBuilder(owner: Class[_], val resourceName: String, sentryRe
    * @param durationLimit the maximum duration of a call
    * @return a new sentry that applies a duration limit after the current sentry behavior
    */
-  def withDurationLimit(durationLimit: Duration): ChainableSentry with SentryBuilder =
+  def withDurationLimit(durationLimit: FiniteDuration): ChainableSentry with SentryBuilder =
     withSentry(new DurationLimitSentry(resourceName, durationLimit))
 
   /**

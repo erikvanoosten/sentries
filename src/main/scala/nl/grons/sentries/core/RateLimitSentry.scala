@@ -12,7 +12,7 @@ package nl.grons.sentries.core
 
 import com.yammer.metrics.Metrics
 import java.util.concurrent.atomic.{AtomicLong, AtomicInteger}
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.FiniteDuration
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
 
@@ -30,7 +30,7 @@ class RateLimitSentry(
   owner: Class[_],
   val resourceName: String,
   rate: Int,
-  timeSpan: Duration
+  timeSpan: FiniteDuration
 ) extends ChainableSentry {
 
   private[this] val timeSpanMillis = timeSpan.toMillis

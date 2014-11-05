@@ -16,8 +16,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.TimeUnit
 import nl.grons.sentries.support.{LongAdder, NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
-import scala.concurrent.duration.Duration
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.forkjoin.ThreadLocalRandom
 import scala.util.control.ControlThrowable
 
@@ -77,7 +76,7 @@ class AdaptiveThroughputSentry(
   owner: Class[_],
   val resourceName: String,
   val targetSuccessRatio: Double = 0.95D,
-  val evaluationDelay: Duration = Duration(1, TimeUnit.SECONDS),
+  val evaluationDelay: FiniteDuration = Duration(1, TimeUnit.SECONDS),
   val minimumInvocationCountThreshold: Int = 0,
   successIncreaseFactor: Double = 1.2D,
   val failedInvocationDurationThreshold: FiniteDuration = Duration(0, TimeUnit.MILLISECONDS)

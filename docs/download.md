@@ -58,5 +58,6 @@ libraryDependencies += "nl.grons" %% "sentries" % "0.8.0"
 
 * _NOT_ binary backward compatible. This version _is_ source compatible with 0.7.x.
 * Dropped scala 2.9 support.
+* All durations typed as `FiniteDuration` instead of `Duration` (both from package `scala.concurrent.duration`).
 * Added parameter `failedInvocationDurationThreshold` to `AdaptiveThroughputSentry` in order to not reduce throughput on fast failures.
   This features was introduced after a long discussion on a hack night of the [Amsterdam Scala group](http://www.meetup.com/amsterdam-scala/).

@@ -13,7 +13,7 @@ package nl.grons.sentries.core
 import com.yammer.metrics.{Metrics, HealthChecks}
 import com.yammer.metrics.core.{MetricName, HealthCheck}
 import java.util.concurrent.atomic.{AtomicReference, AtomicInteger}
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.FiniteDuration
 import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
 import scala.util.control.ControlThrowable
@@ -38,7 +38,7 @@ class CircuitBreakerSentry(
   owner: Class[_],
   val resourceName: String,
   val failLimit: Int,
-  val retryDelay: Duration
+  val retryDelay: FiniteDuration
 ) extends ChainableSentry {
   import CircuitBreakerSentry._
 
