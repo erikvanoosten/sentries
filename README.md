@@ -42,7 +42,7 @@ class DoItAllService extends nl.grons.sentries.support.SentrySupport {
 }
 ```
 
-See [Available sentries](docs/sentries.md) for more and [SentryExampleApp](/erikvanoosten/sentries/blob/master/src/main/scala/nl/grons/sentries/examples/SentryExampleApp.scala) for a more elaborate example.
+See [Available sentries](docs/sentries.md) for more and [SentryExampleApp](/src/main/scala/nl/grons/sentries/examples/SentryExampleApp.scala) for a more elaborate example.
 
 ## JMX
 
