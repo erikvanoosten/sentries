@@ -10,10 +10,10 @@
 
 package nl.grons.sentries.core
 
-import nl.grons.sentries.support.ChainableSentry
-import com.yammer.metrics.core.Clock
-import com.yammer.metrics.Metrics
 import java.util.concurrent.TimeUnit.NANOSECONDS
+
+import com.codahale.metrics.Clock
+import nl.grons.sentries.support.NamedSentry
 
 /**
  * Sentry that times invocations.
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit.NANOSECONDS
  * This sentry can not be used in the same sentry chain as
  * the [[nl.grons.sentries.core.MetricSentry]].
  */
-class TimerSentry(owner: Class[_], val resourceName: String) extends ChainableSentry {
+class TimerSentry(val owner: Class[_], val resourceName: String) extends NamedSentry {
 
   val sentryType = "metrics"
 
@@ -35,8 +35,8 @@ class TimerSentry(owner: Class[_], val resourceName: String) extends ChainableSe
    * Run the given code block in the context of this sentry, and return its value.
    */
   def apply[T](r: => T) = {
-    val start = clock.tick()
-    try r finally timer.update(clock.tick() - start, NANOSECONDS)
+    val start = clock.getTick()
+    try r finally timer.update(clock.getTick() - start, NANOSECONDS)
   }
 
   def reset() {}

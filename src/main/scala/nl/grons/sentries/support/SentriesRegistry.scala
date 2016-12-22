@@ -10,8 +10,9 @@
 
 package nl.grons.sentries.support
 
-import com.yammer.metrics.core.{Stoppable, MetricName}
 import java.util.concurrent.{Executors, CopyOnWriteArrayList}
+import nl.grons.metrics.scala.MetricName
+
 import scala.collection.concurrent.{Map => CMap}
 import scala.collection.concurrent.TrieMap.{empty => emptyCMap}
 import scala.collection.JavaConverters._
@@ -22,7 +23,7 @@ import scala.collection.JavaConverters._
 class SentriesRegistry() {
 
   private[this] val listeners = new CopyOnWriteArrayList[SentriesRegistryListener]().asScala
-  private[this] val sentries: CMap[MetricName, NamedSentry] = newSentriesMap()
+  private[this] val sentries: CMap[String, NamedSentry] = newSentriesMap()
 
   /**
    * Adds a [[nl.grons.sentries.support.SentriesRegistryListener]] to a collection of listeners that will
@@ -32,7 +33,7 @@ class SentriesRegistry() {
    *
    * @param listener the listener that will be notified
    */
-  def addListener(listener: SentriesRegistryListener) {
+  def addListener(listener: SentriesRegistryListener): Unit = {
     listeners += listener
     sentries.foreach {
       case (name, sentry) => listener.onSentryAdded(name, sentry)
@@ -44,99 +45,21 @@ class SentriesRegistry() {
    *
    * @param listener the listener that will be removed
    */
-  def removeListener(listener: SentriesRegistryListener) {
+  def removeListener(listener: SentriesRegistryListener): Unit = {
     listeners -= listener
   }
 
   /**
-   * Gets any existing sentry with the given name or, if none exists, adds the given sentry.
+   * Adds the given sentry, or gets any existing sentry with the same name.
    *
    * @param sentry the sentry to add
-   * @param sentryOwner the class that owns the sentry
-   * @param name name of the sentry
-   * @param sentryType sentryType type of sentry
    * @tparam S type of the sentry
    * @return either the existing sentry or `sentry`
    */
-  def getOrAdd[S <: NamedSentry](sentry: S, sentryOwner: Class[_], name: String, sentryType: String): S =
-    getOrAdd(createName(sentryOwner, name, sentryType), sentry)
-
-  /**
-   * Removes the sentry for the given class with the given name (and sentryType).
-   *
-   * @param sentryOwner the class that owns the sentry
-   * @param name  the name of the sentry
-   * @param sentryType the sentryType of the sentry
-   */
-  def removeSentry(sentryOwner: Class[_], name: String, sentryType: String) {
-    removeSentry(createName(sentryOwner, name, sentryType))
-  }
-
-  /**
-   * Removes the sentry with the given name.
-   *
-   * @param name the name of the sentry
-   */
-  def removeSentry(name: MetricName) {
-    sentries.remove(name).map { sentry =>
-      if (sentry.isInstanceOf[Stoppable]) sentry.asInstanceOf[Stoppable].stop()
-      notifySentriesRemoved(name)
-    }
-  }
-
-  /**
-   * Remove all sentries from the registry.
-   *
-   * See README.md section 'Sentries in tests' for alternatives during testing.
-   */
-  @deprecated(message = "will be removed in sentries 0.6", since = "0.5")
-  def clear() {
-    val sentryNames = Set() ++ sentries.keySet
-    sentryNames.map(sentryName => removeSentry(sentryName))
-  }
-
-  /**
-   * Reset all known sentries to their initial state by calling [Sentry#reset] on each sentry.
-   *
-   * See README.md section 'Sentries in tests' for alternatives during testing.
-   */
-  def resetAllSentries() {
-    sentries.foreach {
-      case (_, sentry) => sentry.reset()
-    }
-  }
-
-  /**
-   * Override to customize how [[com.yammer.metrics.core.MetricName]]s are created.
-   *
-   * @param sentryOwner the class which owns the sentry
-   * @param name  the name of the sentry
-   * @param sentryType the sentry's sentryType
-   * @return the sentry's full name
-   */
-  protected def createName(sentryOwner: Class[_], name: String, sentryType: String): MetricName =
-    new MetricName(sentryOwner, name + "." + sentryType)
-
-  /**
-   * Returns a new concurrent map implementation. Subclass this to do weird things with
-   * your own [[nl.grons.sentries.support.SentriesRegistry]] implementation.
-   *
-   * @return a new [[scala.collection.concurrent.Map]]
-   */
-  protected def newSentriesMap(): CMap[MetricName, NamedSentry] = emptyCMap
-
-  /**
-   * Gets any existing sentry with the given name or, if none exists, adds the given sentry.
-   *
-   * @param name   the sentry's name
-   * @param sentry the new sentry
-   * @tparam S     the type of the sentry
-   * @return either the existing sentry or `sentry`
-   */
-  private def getOrAdd[S <: NamedSentry](name: MetricName, sentry: S): S = {
+  def getOrAdd[S <: NamedSentry](sentry: S): S = {
+    val name = sentryNameFor(sentry)
     sentries.putIfAbsent(name, sentry) match {
       case Some(existing) =>
-        if (sentry.isInstanceOf[Stoppable]) sentry.asInstanceOf[Stoppable].stop()
         existing.asInstanceOf[S]
       case None =>
         notifySentriesAdded(name, sentry)
@@ -144,16 +67,54 @@ class SentriesRegistry() {
     }
   }
 
-  private def notifySentriesRemoved(name: MetricName) {
+  /**
+   * Removes a sentry.
+   *
+   * @param sentry the sentry to remove
+   */
+  def removeSentry(sentry: NamedSentry): Unit = {
+    removeSentry(sentryNameFor(sentry))
+  }
+
+  private def removeSentry(sentryName: String): Unit = {
+    sentries.remove(sentryName).map { sentry =>
+      notifySentriesRemoved(sentryName)
+    }
+  }
+
+  /**
+   * Reset all known sentries to their initial state by calling [Sentry#reset] on each sentry.
+   *
+   * See README.md section 'Sentries in tests' for alternatives during testing.
+   */
+  def resetAllSentries(): Unit = {
+    sentries.foreach {
+      case (_, sentry) => sentry.reset()
+    }
+  }
+
+  protected def sentryNameFor(sentry: NamedSentry): String =
+    MetricName(sentry.owner, sentry.resourceName, sentry.sentryType).name
+
+  /**
+   * Returns a new concurrent map implementation. Subclass this to do weird things with
+   * your own [[nl.grons.sentries.support.SentriesRegistry]] implementation.
+   *
+   * @return a new [[scala.collection.concurrent.Map]]
+   */
+  protected def newSentriesMap(): CMap[String, NamedSentry] = emptyCMap
+  
+  private def notifySentriesRemoved(name: String): Unit = {
     listeners.foreach(_.onSentryRemoved(name))
   }
 
-  private def notifySentriesAdded(name: MetricName, sentry: NamedSentry) {
+  private def notifySentriesAdded(name: String, sentry: NamedSentry): Unit = {
     listeners.foreach(_.onSentryAdded(name, sentry))
   }
 
 }
 
 object SentriesRegistry {
-  val executor = Executors.newCachedThreadPool()
+  /** Executor used by [[nl.grons.sentries.core.DurationLimitSentry]]. */
+  lazy val executor = Executors.newCachedThreadPool()
 }

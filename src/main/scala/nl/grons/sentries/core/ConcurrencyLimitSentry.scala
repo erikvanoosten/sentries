@@ -10,10 +10,8 @@
 
 package nl.grons.sentries.core
 
-import com.yammer.metrics.Metrics
 import java.util.concurrent.Semaphore
-import nl.grons.sentries.support.{NotAvailableException, ChainableSentry}
-import nl.grons.sentries.support.MetricsSupport._
+import nl.grons.sentries.support.{NotAvailableException, NamedSentry}
 
 /**
  * A sentry that limits the number of concurrent invocations.
@@ -23,10 +21,10 @@ import nl.grons.sentries.support.MetricsSupport._
  * This sentry can be used as an alternative to a pool for easy to crate objects.
  */
 class ConcurrencyLimitSentry(
-  owner: Class[_],
+  val owner: Class[_],
   val resourceName: String,
   concurrencyLimit: Int
-) extends ChainableSentry {
+) extends NamedSentry {
 
   val sentryType = "concurrencyLimit"
 

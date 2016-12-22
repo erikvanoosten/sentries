@@ -11,7 +11,6 @@
 package nl.grons.sentries.support
 
 import java.util.EventListener
-import com.yammer.metrics.core.MetricName
 
 /**
  * Listeners for events from the registry.  Listeners must be thread-safe.
@@ -21,16 +20,16 @@ trait SentriesRegistryListener extends EventListener {
   /**
    * Called when a sentry has been added to the [[nl.grons.sentries.support.SentriesRegistry]].
    *
-   * @param name   the name of the sentry
+   * @param name the name of the sentry
    * @param sentry the sentry
    */
-  def onSentryAdded(name: MetricName, sentry: NamedSentry)
+  def onSentryAdded(name: String, sentry: NamedSentry)
 
   /**
    * Called when a sentry has been removed from the [[nl.grons.sentries.support.SentriesRegistry]].
    *
    * @param name the name of the sentry
    */
-  def onSentryRemoved(name: MetricName)
+  def onSentryRemoved(name: String)
 
 }

@@ -11,7 +11,7 @@
 package nl.grons.sentries.core
 
 import java.util.concurrent.TimeoutException
-import nl.grons.sentries.support.{SentriesRegistry, NotAvailableException, ChainableSentry}
+import nl.grons.sentries.support.{NamedSentry, SentriesRegistry, NotAvailableException, ChainableSentry}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Future, Await, ExecutionContext}
 
@@ -33,7 +33,11 @@ import scala.concurrent.{Future, Await, ExecutionContext}
  * is used which creates as much threads as needed. The executor can be changed by overriding
  * [[.executionContext]].
  */
-class DurationLimitSentry(val resourceName: String, durationLimit: FiniteDuration) extends ChainableSentry {
+class DurationLimitSentry(
+  val owner: Class[_],
+  val resourceName: String,
+  durationLimit: FiniteDuration
+) extends NamedSentry {
   val sentryType = "durationLimit"
 
   lazy val executionContext = DurationLimitSentry.ec

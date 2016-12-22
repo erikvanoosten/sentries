@@ -12,7 +12,7 @@ name := "sentries"
 
 organization := "nl.grons"
 
-version := "0.8.0"
+version := "0.9.0"
 
 crossVersion := CrossVersion.binary
 
@@ -22,7 +22,7 @@ description <<= scalaVersion { sv =>
 
 scalaVersion := "2.11.0"
 
-crossScalaVersions := Seq("2.10.4", "2.11.4")
+crossScalaVersions := Seq("2.10.5", "2.11.6")
 
 resolvers ++= Seq(
   "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
@@ -31,7 +31,7 @@ resolvers ++= Seq(
 
 libraryDependencies <++= (scalaVersion) { sv: String =>
   Seq(
-    "com.yammer.metrics" % "metrics-core" % "2.2.0",
+    "nl.grons" %% "metrics-scala" % "3.4.0",
     "org.slf4j" % "slf4j-api" % "1.7.5"
   ) ++ (
     if (sv.startsWith("2.11"))      Seq("org.specs2" %% "specs2" % "2.3.11" % "test")

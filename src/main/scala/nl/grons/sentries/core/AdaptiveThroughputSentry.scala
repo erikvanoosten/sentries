@@ -10,11 +10,12 @@
 
 package nl.grons.sentries.core
 
+import com.codahale.metrics.health.HealthCheck
 import com.yammer.metrics.core.{MetricName, HealthCheck}
 import com.yammer.metrics.{Metrics, HealthChecks}
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.TimeUnit
-import nl.grons.sentries.support.{LongAdder, NotAvailableException, ChainableSentry}
+import nl.grons.sentries.support.{NamedSentry, LongAdder, NotAvailableException, ChainableSentry}
 import nl.grons.sentries.support.MetricsSupport._
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.forkjoin.ThreadLocalRandom
@@ -73,14 +74,14 @@ import scala.util.control.ControlThrowable
  *   e.g. `1 millisecond`.
  */
 class AdaptiveThroughputSentry(
-  owner: Class[_],
+  val owner: Class[_],
   val resourceName: String,
   val targetSuccessRatio: Double = 0.95D,
   val evaluationDelay: FiniteDuration = Duration(1, TimeUnit.SECONDS),
   val minimumInvocationCountThreshold: Int = 0,
   successIncreaseFactor: Double = 1.2D,
   val failedInvocationDurationThreshold: FiniteDuration = Duration(0, TimeUnit.MILLISECONDS)
-) extends ChainableSentry {
+) extends NamedSentry {
   import AdaptiveThroughputSentry._
 
   require(targetSuccessRatio > 0 && targetSuccessRatio < 1, "0 < targetSuccessRatio < 1 but is " + targetSuccessRatio)
