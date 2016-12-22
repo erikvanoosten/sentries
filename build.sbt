@@ -20,7 +20,7 @@ description <<= scalaVersion { sv =>
   "sentries for Scala " + sbt.cross.CrossVersionUtil.binaryScalaVersion(sv)
 }
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.12.1"
 
 crossScalaVersions := Seq("2.10.4", "2.11.4")
 
@@ -34,7 +34,8 @@ libraryDependencies <++= (scalaVersion) { sv: String =>
     "com.yammer.metrics" % "metrics-core" % "2.2.0",
     "org.slf4j" % "slf4j-api" % "1.7.5"
   ) ++ (
-    if (sv.startsWith("2.11"))      Seq("org.specs2" %% "specs2" % "2.3.11" % "test")
+    if (sv.startsWith("2.12"))      Seq("org.specs2" %% "specs2-core" % "2.4.17" % "test")
+    else if (sv.startsWith("2.11")) Seq("org.specs2" %% "specs2" % "2.3.11" % "test")
     else if (sv.startsWith("2.10")) Seq("org.specs2" %% "specs2" % "1.13" % "test")
     else sys.error("Not supported scala version: " + sv)
   )
