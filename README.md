@@ -1,6 +1,6 @@
 [![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 
-*Update May 2021:* This project was started for use in a completely synchronous environment.
+*Update May 2021:* This project was started in 2012 for use in a completely synchronous environment.
 Even back then this was a questionable idea given the high load we had to deal with. Instead
 of using this project, I would recommend you to migrate to something more asynchronous such
 as Zio or Cats Effect. If that is out of the question, feel free to clone this project and
